@@ -1,3 +1,7 @@
+using BankSystemProject.Data;
+using BankSystemProject.Model;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankSystemProject
 {
@@ -9,14 +13,27 @@ namespace BankSystemProject
 
             // Add services to the container.
 
+            // Register DbContext with SQL Server
+            builder.Services.AddDbContext<Bank_DbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // Add Identity services
+            builder.Services.AddIdentity<Users, IdentityRole>(options =>
+            {
+               
+            })
+            .AddEntityFrameworkStores<Bank_DbContext>()
+            .AddDefaultTokenProviders();
+
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+            
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+           
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -25,8 +42,9 @@ namespace BankSystemProject
 
             app.UseHttpsRedirection();
 
+            
+            app.UseAuthentication(); 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
