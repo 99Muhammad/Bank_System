@@ -19,8 +19,8 @@ namespace BankSystemProject.Config
 
             builder.Property(tlu => tlu.LogoutTime);
 
-            builder.Property(tlu => tlu.IsActive)
-                   .IsRequired();
+            //builder.Property(tlu => tlu.IsActive)
+            //       .IsRequired();
         }
     }
 

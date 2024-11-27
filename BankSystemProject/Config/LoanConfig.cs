@@ -18,8 +18,8 @@ namespace BankSystemProject.Config
                    .WithMany(lt => lt.Loans)
                    .HasForeignKey(l => l.LoanTypeId);
 
-            builder.Property(l => l.LoanAmount)
-                   .HasColumnType("decimal(18,2)");
+            //builder.Property(l => l.LoanAmount)
+            //       .HasColumnType("decimal(18,2)");
 
             builder.Property(l => l.StartDate)
                    .IsRequired();

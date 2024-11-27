@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace BankSystemProject.Migrations
 {
     /// <inheritdoc />
-    public partial class SetupEnvironment : Migration
+    public partial class AlterCustomerAccounts : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,8 +19,8 @@ namespace BankSystemProject.Migrations
                 {
                     AccountTypeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AccountTypeName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
+                    AccountTypeName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -47,7 +49,7 @@ namespace BankSystemProject.Migrations
                     FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PersonalImage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -77,8 +79,8 @@ namespace BankSystemProject.Migrations
                 {
                     BankFeeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FeeType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    FeeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Amount = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -214,8 +216,8 @@ namespace BankSystemProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     AccountTypeId = table.Column<int>(type: "int", nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Balance = table.Column<double>(type: "float", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     AccountNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PinCode = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false)
                 },
@@ -287,11 +289,11 @@ namespace BankSystemProject.Migrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     AccountNumTransferFrom = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AccountNumTransferTo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BalanceFromBeforeTransfer = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BalanceToBeforeTransfer = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BalanceFromBeforeTransfer = table.Column<double>(type: "float", nullable: false),
+                    BalanceToBeforeTransfer = table.Column<double>(type: "float", nullable: false),
                     DateTimeTransfer = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    BalanceFromAfterTransfer = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BalanceToAfterTransfer = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    BalanceFromAfterTransfer = table.Column<double>(type: "float", nullable: false),
+                    BalanceToAfterTransfer = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -312,8 +314,8 @@ namespace BankSystemProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerAccountId = table.Column<int>(type: "int", nullable: false),
                     CardType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CreditLimit = table.Column<double>(type: "float", nullable: false),
+                    Balance = table.Column<double>(type: "float", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -336,7 +338,7 @@ namespace BankSystemProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerAccountId = table.Column<int>(type: "int", nullable: false),
                     LoanTypeId = table.Column<int>(type: "int", nullable: false),
-                    AmountRequested = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AmountRequested = table.Column<double>(type: "float", nullable: false),
                     ApplicationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ApprovalDate = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -366,7 +368,7 @@ namespace BankSystemProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerAccountId = table.Column<int>(type: "int", nullable: false),
                     LoanTypeId = table.Column<int>(type: "int", nullable: false),
-                    LoanAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    LoanAmount = table.Column<double>(type: "float", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
@@ -396,7 +398,7 @@ namespace BankSystemProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerAccountId = table.Column<int>(type: "int", nullable: false),
                     TransactionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Amount = table.Column<double>(type: "float", nullable: false),
                     TransactionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     BankFeeId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -450,7 +452,7 @@ namespace BankSystemProject.Migrations
                     LoanRepaymentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     LoanId = table.Column<int>(type: "int", nullable: false),
-                    AmountPaid = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AmountPaid = table.Column<double>(type: "float", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RemainingBalance = table.Column<double>(type: "float", nullable: false)
                 },
@@ -484,6 +486,18 @@ namespace BankSystemProject.Migrations
                         principalTable: "Branches",
                         principalColumn: "BranchId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AccountTypes",
+                columns: new[] { "AccountTypeId", "AccountTypeName", "Description" },
+                values: new object[,]
+                {
+                    { 1, "Savings Account", "A basic account for saving money with interest, typically with limited withdrawals." },
+                    { 2, "Checking Account", "An account for frequent transactions, often used for daily spending." },
+                    { 3, "Fixed Deposit", "A long-term deposit account with a fixed term and higher interest rate." },
+                    { 4, "Business Account", "A checking or savings account tailored for businesses and organizations." },
+                    { 5, "Salary Account", "A checking account used for receiving employee salaries directly from employers." }
                 });
 
             migrationBuilder.CreateIndex(
