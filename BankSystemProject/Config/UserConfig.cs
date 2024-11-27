@@ -43,12 +43,15 @@ namespace BankSystemProject.Config
                        .WithOne(ca => ca.User)
                        .HasForeignKey(ca => ca.UserId);
 
+            builder.Property(e => e.DateOfBirth)
+              .HasColumnType("datetime");
+
             //builder.HasMany(u=>u.TrackingLoggedInUsers)
             //    .WithOne(ca => ca.User)
             //    .HasForeignKey(ca => ca.UserId);
 
 
-            
+
         }
     }
 }

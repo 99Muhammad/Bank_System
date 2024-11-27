@@ -14,8 +14,8 @@ namespace BankSystemProject.Config
                    .WithMany(l => l.LoanRepayments)
                    .HasForeignKey(lr => lr.LoanId);
 
-            builder.Property(lr => lr.AmountPaid)
-                   .HasColumnType("decimal(18,2)");
+            //builder.Property(lr => lr.AmountPaid)
+            //       .HasColumnType("decimal(18,2)");
 
             builder.Property(lr => lr.PaymentDate)
                    .IsRequired();

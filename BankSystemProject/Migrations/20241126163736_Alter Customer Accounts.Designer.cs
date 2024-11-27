@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankSystemProject.Migrations
 {
     [DbContext(typeof(Bank_DbContext))]
-    [Migration("20241125161759_Setup Environment")]
-    partial class SetupEnvironment
+    [Migration("20241126163736_Alter Customer Accounts")]
+    partial class AlterCustomerAccounts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,17 +61,47 @@ namespace BankSystemProject.Migrations
 
                     b.Property<string>("AccountTypeName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("AccountTypeId");
 
                     b.ToTable("AccountTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            AccountTypeId = 1,
+                            AccountTypeName = "Savings Account",
+                            Description = "A basic account for saving money with interest, typically with limited withdrawals."
+                        },
+                        new
+                        {
+                            AccountTypeId = 2,
+                            AccountTypeName = "Checking Account",
+                            Description = "An account for frequent transactions, often used for daily spending."
+                        },
+                        new
+                        {
+                            AccountTypeId = 3,
+                            AccountTypeName = "Fixed Deposit",
+                            Description = "A long-term deposit account with a fixed term and higher interest rate."
+                        },
+                        new
+                        {
+                            AccountTypeId = 4,
+                            AccountTypeName = "Business Account",
+                            Description = "A checking or savings account tailored for businesses and organizations."
+                        },
+                        new
+                        {
+                            AccountTypeId = 5,
+                            AccountTypeName = "Salary Account",
+                            Description = "A checking account used for receiving employee salaries directly from employers."
+                        });
                 });
 
             modelBuilder.Entity("BankSystemProject.Model.BankFee", b =>
@@ -82,13 +112,12 @@ namespace BankSystemProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BankFeeId"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Amount")
+                        .HasColumnType("float");
 
                     b.Property<string>("FeeType")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("BankFeeId");
 
@@ -134,15 +163,15 @@ namespace BankSystemProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CreditCardId"));
 
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Balance")
+                        .HasColumnType("float");
 
                     b.Property<string>("CardType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("CreditLimit")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("CreditLimit")
+                        .HasColumnType("float");
 
                     b.Property<int>("CustomerAccountId")
                         .HasColumnType("int");
@@ -177,11 +206,11 @@ namespace BankSystemProject.Migrations
                     b.Property<int>("AccountTypeId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Balance")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime");
 
                     b.Property<string>("PinCode")
                         .IsRequired()
@@ -237,8 +266,8 @@ namespace BankSystemProject.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("LoanAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("LoanAmount")
+                        .HasColumnType("float");
 
                     b.Property<int>("LoanTypeId")
                         .HasColumnType("int");
@@ -267,8 +296,8 @@ namespace BankSystemProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoanApplicationId"));
 
-                    b.Property<decimal>("AmountRequested")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("AmountRequested")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("ApplicationDate")
                         .HasColumnType("datetime2");
@@ -303,8 +332,8 @@ namespace BankSystemProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoanRepaymentId"));
 
-                    b.Property<decimal>("AmountPaid")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("AmountPaid")
+                        .HasColumnType("float");
 
                     b.Property<int>("LoanId")
                         .HasColumnType("int");
@@ -382,8 +411,8 @@ namespace BankSystemProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Amount")
+                        .HasColumnType("float");
 
                     b.Property<int?>("BankFeeId")
                         .HasColumnType("int");
@@ -423,17 +452,17 @@ namespace BankSystemProject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("BalanceFromAfterTransfer")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("BalanceFromAfterTransfer")
+                        .HasColumnType("float");
 
-                    b.Property<decimal>("BalanceFromBeforeTransfer")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("BalanceFromBeforeTransfer")
+                        .HasColumnType("float");
 
-                    b.Property<decimal>("BalanceToAfterTransfer")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("BalanceToAfterTransfer")
+                        .HasColumnType("float");
 
-                    b.Property<decimal>("BalanceToBeforeTransfer")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("BalanceToBeforeTransfer")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("DateTimeTransfer")
                         .HasColumnType("datetime2");
@@ -467,7 +496,7 @@ namespace BankSystemProject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Email")
                         .IsRequired()

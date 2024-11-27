@@ -10,13 +10,13 @@ namespace BankSystemProject.Config
         {
             builder.HasKey(bf => bf.BankFeeId);
 
-            builder.Property(bf => bf.FeeType)
-                   .HasMaxLength(100)
-                   .IsRequired();
+            //builder.Property(bf => bf.FeeType)
+            //       .HasMaxLength(100)
+            //       .IsRequired();
 
-            builder.Property(bf => bf.Amount)
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
+            //builder.Property(bf => bf.Amount)
+            //       .HasColumnType("decimal(18,2)")
+            //       .IsRequired();
         }
     }
 

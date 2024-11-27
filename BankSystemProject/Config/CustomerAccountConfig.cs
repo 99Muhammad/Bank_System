@@ -26,9 +26,12 @@ namespace BankSystemProject.Config
                    .HasMaxLength(6)
                    .IsRequired();
 
-            builder.Property(ca => ca.Balance)
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
+            builder.Property(e => e.CreatedDate)
+                .HasColumnType("datetime"); // Ensure EF Core uses SQL Server's DateTime type
+
+            //builder.Property(ca => ca.Balance)
+            //       .HasColumnType("decimal(18,2)")
+            //       .IsRequired();
         }
     }
 

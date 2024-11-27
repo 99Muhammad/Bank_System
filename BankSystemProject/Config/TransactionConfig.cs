@@ -14,11 +14,11 @@ namespace BankSystemProject.Config
                    .WithMany(ca => ca.Transactions)
                    .HasForeignKey(t => t.CustomerAccountId);
 
-            builder.Property(t => t.Amount)
-                   .HasColumnType("decimal(18,2)");
+            //builder.Property(t => t.Amount)
+            //       .HasColumnType("decimal(18,2)");
 
-            builder.Property(t => t.TransactionDate)
-                   .IsRequired();
+            //builder.Property(t => t.TransactionDate)
+            //       .IsRequired();
         }
     }
 }
