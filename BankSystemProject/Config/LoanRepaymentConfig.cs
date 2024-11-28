@@ -17,8 +17,8 @@ namespace BankSystemProject.Config
             //builder.Property(lr => lr.AmountPaid)
             //       .HasColumnType("decimal(18,2)");
 
-            builder.Property(lr => lr.PaymentDate)
-                   .IsRequired();
+            //builder.Property(lr => lr.PaymentDate)
+            //       .IsRequired();
         }
     }
 

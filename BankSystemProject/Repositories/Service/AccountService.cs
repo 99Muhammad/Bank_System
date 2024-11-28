@@ -1,10 +1,13 @@
-﻿using BankSystemProject.Data;
-using BankSystemProject.Helper;
+﻿using BankSystemProject.Controllers.AdminControllers;
+using BankSystemProject.Data;
+using BankSystemProject.Helpers;
 using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
-using BankSystemProject.Repositories.Interface;
+using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using Mailjet.Client.Resources;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MimeKit.Encodings;
 
@@ -16,33 +19,45 @@ namespace BankSystemProject.Repositories.Service
         private readonly Bank_DbContext _context;
         private readonly UserManager<Users> _userManager;
         private readonly SignInManager<Users> _signInManager;
+        private readonly ILogger<AccountController> _logger;
 
         public AccountService(Bank_DbContext _context, UserManager<Users> _userManager
-            , SignInManager<Users> _signInManager)
+            , SignInManager<Users> _signInManager, ILogger<AccountController> logger)
         {
-            this._context = _context;   
+            this._context = _context;
             this._userManager = _userManager;
             this._signInManager = _signInManager;
+            _logger = logger;
+
         }
 
-        public async Task<string> LoginAsync(Req_Login loginDto)
+        public async Task<Users> LoginAsync(Req_Login loginDto)
         {
-          
+            // _logger.LogInformation("Attempting to log in with email: {Email}", loginDto.Email);
+
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
             if (user == null)
             {
-                return "Invalid credentials.";
+                return null; // User not found
             }
-            var signInResult = await _signInManager.PasswordSignInAsync(user, loginDto.Password, isPersistent: false, lockoutOnFailure: false);
 
-            if (signInResult.Succeeded)
+            // Check if the user's email or password hash is null (just in case)
+            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.PasswordHash))
             {
-               
-                return "Login successful!";
+                return null; // Handle the case where the user record is incomplete
             }
-            return "";
+
+            // Now check the password
+            if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            {
+                return null; // Invalid password
+            }
+
+            return user; // User successfully authenticated
         }
+
+
         public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
         {
             // Check for existing user by email and username
@@ -70,7 +85,9 @@ namespace BankSystemProject.Repositories.Service
                 UserName = registerDto.UserName,
                 Email = registerDto.Email,
                 Role = registerDto.UserRole.ToString(),
-                DateOfBirth=registerDto.DateOfBirth,
+                DateOfBirth = registerDto.DateOfBirth,
+                PersonalImage = "jj.png",
+                LockoutEnd = DateTime.Now,
             };
 
             // Create user
@@ -89,8 +106,8 @@ namespace BankSystemProject.Repositories.Service
             {
                 return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
             }
-            
-            
+
+
 
             // Create user account
             var userAccountInfo = new CustomerAccount
@@ -100,7 +117,7 @@ namespace BankSystemProject.Repositories.Service
                 AccountNumber = hashedAccountNumber,
                 PinCode = HashingHelper.HashString(registerDto.PinCode),
                 AccountTypeId = (int)registerDto.accountType,
-                CreatedDate =DateTime.Now
+                CreatedDate = DateTime.Now
             };
 
             _context.CustomersAccounts.Add(userAccountInfo);
@@ -113,9 +130,6 @@ namespace BankSystemProject.Repositories.Service
                 Success = true
             };
         }
-
-
-
 
         private async Task<string> GenerateUniqueAccountNumAsync()
         {

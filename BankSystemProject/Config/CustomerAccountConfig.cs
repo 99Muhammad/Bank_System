@@ -18,13 +18,13 @@ namespace BankSystemProject.Config
                    .WithMany(at => at.CustomerAccounts)
                    .HasForeignKey(ca => ca.AccountTypeId);
 
-            builder.Property(ca => ca.AccountNumber)
-                   .HasMaxLength(50)
-                   .IsRequired();
+            //builder.Property(ca => ca.AccountNumber)
+            //       .HasMaxLength(50)
+            //       .IsRequired();
 
-            builder.Property(ca => ca.PinCode)
-                   .HasMaxLength(6)
-                   .IsRequired();
+            //builder.Property(ca => ca.PinCode)
+            //       .HasMaxLength(6)
+            //       .IsRequired();
 
             builder.Property(e => e.CreatedDate)
                 .HasColumnType("datetime"); // Ensure EF Core uses SQL Server's DateTime type

@@ -14,10 +14,10 @@ namespace BankSystemProject.Config
                    .WithMany(u => u.TrackingLoggedInUsers)
                    .HasForeignKey(tlu => tlu.UserId);
 
-            builder.Property(tlu => tlu.LoginTime)
-                   .IsRequired();
+            //builder.Property(tlu => tlu.LoginTime)
+            //       .IsRequired();
 
-            builder.Property(tlu => tlu.LogoutTime);
+            //builder.Property(tlu => tlu.LogoutTime);
 
             //builder.Property(tlu => tlu.IsActive)
             //       .IsRequired();
