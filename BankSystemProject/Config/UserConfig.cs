@@ -13,31 +13,31 @@ namespace BankSystemProject.Config
            
                 builder.HasKey(u => u.Id);
 
-                builder.Property(u => u.FullName)
-                       .HasMaxLength(200)
-                       .IsRequired();
+            //builder.Property(u => u.FullName)
+            //       .HasMaxLength(200);
 
-                builder.Property(u => u.Email)
-                       .HasMaxLength(100)
-                       .IsRequired();
 
-                builder.Property(u => u.PhoneNumber)
-                       .HasMaxLength(20);
+            //builder.Property(u => u.Email)
+            //       .HasMaxLength(100);
+                       
 
-                builder.Property(u => u.Address)
-                       .HasMaxLength(250);
+            //    builder.Property(u => u.PhoneNumber)
+            //           .HasMaxLength(20);
 
-                builder.Property(u => u.DateOfBirth)
-                       .IsRequired();
+            //    builder.Property(u => u.Address)
+            //           .HasMaxLength(250);
 
-                builder.Property(u => u.Role)
-                       .IsRequired();
+            //builder.Property(u => u.DateOfBirth)
+            //       ;
 
-                builder.Property(u => u.PersonalImage)
-                       .HasMaxLength(500);
+            //builder.Property(u => u.Role)
+            //      ;
 
-                builder.Property(u => u.Gender)
-                       .IsRequired();
+            //builder.Property(u => u.PersonalImage)
+            //      ;
+
+            //builder.Property(u => u.Gender)
+            //       ;
 
                 builder.HasMany(u => u.CustomerAccounts)
                        .WithOne(ca => ca.User)

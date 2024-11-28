@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace BankSystemProject.Helper
+namespace BankSystemProject.Helpers
 {
     public static class HashingHelper
     {

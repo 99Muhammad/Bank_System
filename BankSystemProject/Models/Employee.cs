@@ -2,12 +2,12 @@
 {
     public class Employee
     {
-        public int EmployeeId { get; set; }  // Primary Key
-        public string UserId { get; set; }      // Foreign Key to Users
+        public int EmployeeId { get; set; } 
+        public string UserId { get; set; }   
         public DateTime HireDate { get; set; }
-
-        public Users User { get; set; }       // Navigation property to Users
-        public ICollection<Branch> ManagedBranches { get; set; } // Employees may manage branches
+        public int EmployeeSalary { get; set; }
+        public Users User { get; set; }  
+        public ICollection<Branch> ManagedBranches { get; set; }
     }
 
 }

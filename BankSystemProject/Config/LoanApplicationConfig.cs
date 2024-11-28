@@ -18,11 +18,11 @@ namespace BankSystemProject.Config
                    .WithMany(ca => ca.LoanApplications)
                    .HasForeignKey(la => la.CustomerAccountId);
 
-            builder.Property(la => la.ApplicationDate)
-                   .IsRequired();
+            //builder.Property(la => la.ApplicationDate)
+            //       .IsRequired();
 
-            builder.Property(la => la.Status)
-                   .IsRequired();
+            //builder.Property(la => la.Status)
+            //       .IsRequired();
         }
     }
 
