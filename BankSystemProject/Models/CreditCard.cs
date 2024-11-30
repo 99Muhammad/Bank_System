@@ -6,13 +6,14 @@
         public int CustomerAccountId { get; set; }
         public string CardType { get; set; }
         public double CreditLimit { get; set; }
-        public double Balance { get; set; }
+      //  public double Balance { get; set; }
         public DateTime ExpiryDate { get; set; }
         public string Status { get; set; }
         public bool IsDeleted { get; set; }
         public string PinCode { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-     public CustomerAccount CustomerAccount { get; set; }
+        public CustomerAccount CustomerAccount { get; set; }
     }
 
 

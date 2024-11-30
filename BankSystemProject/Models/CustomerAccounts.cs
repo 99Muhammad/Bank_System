@@ -11,6 +11,7 @@ namespace BankSystemProject.Model
         public string AccountNumber { get; set; }
         public bool IsDeleted { get; set; }
         public Users User { get; set; }
+        public double Balance { get; set; }
         public AccountType AccountType { get; set; }
         public ICollection<Transaction> Transactions { get; set; }
         public ICollection<Loan> Loans { get; set; }

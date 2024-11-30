@@ -78,8 +78,10 @@
 //}
 
 
+using AutoMapper;
 using BankSystemProject.Data;
 using BankSystemProject.Model;
+using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Repositories.Service;
@@ -157,6 +159,7 @@ namespace BankSystemProject
             builder.Services.AddScoped<JWTService>();
             builder.Services.AddScoped<IUser, UserService>();
             builder.Services.AddScoped<ICustomerAccount, CustomerAccountsService>();
+            builder.Services.AddScoped<ICreditCard,CreditCardService>();
 
 
             var app = builder.Build();
@@ -177,6 +180,15 @@ namespace BankSystemProject
             app.MapControllers();
 
             app.Run();
+        }
+      
+
+    }
+    public class MappingProfile : Profile
+    {
+        public MappingProfile()
+        {
+            CreateMap<Req_CreditCardDto, CreditCard>();
         }
     }
 }

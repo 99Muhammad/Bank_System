@@ -1,7 +1,8 @@
 ﻿namespace BankSystemProject.Model
 {
-    public class Transaction
+    public class Transactions
     {
+
         public int TransactionId { get; set; }
         public int CustomerAccountId { get; set; }
         public string TransactionType { get; set; }

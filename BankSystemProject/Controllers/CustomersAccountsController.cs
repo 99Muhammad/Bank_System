@@ -21,7 +21,7 @@ namespace BankSystemProject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCustomerAccounts()
         {
-            var accounts = await _IcustomerAccount.GetCustomerAccountsInfoAsync();
+            var accounts = await _IcustomerAccount.GetCustomersAccountsInfoAsync();
             if (!accounts.Any())
             {
                 return NotFound("No customer accounts found.");
@@ -64,5 +64,25 @@ namespace BankSystemProject.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpGet("account-infoByAccountNumber")]
+        //[Authorize]
+        public async Task<IActionResult> GetAccountInfo(string accountNumber)
+        {
+            try
+            {
+                var accountInfo = await _IcustomerAccount.GetAccountInfoByAccountNum(accountNumber);
+                return Ok(accountInfo);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
     }
 }
