@@ -1,4 +1,5 @@
 ﻿using BankSystemProject.Validation;
+using BankSystemProject.Shared.Enums;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
@@ -6,40 +7,11 @@ using System.Runtime.Serialization;
 namespace BankSystemProject.Models.DTOs
 {
 
-    public enum enUserRole
-    {
-        [EnumMember(Value = "Admin")]
-        Admin,
 
-        [EnumMember(Value = "Employee")]
-        Employee,
 
-      
-    }
+    
 
-    public enum enGendder
-    {
-        [EnumMember(Value ="Male")]
-        Male,
-        [EnumMember(Value ="Female")]
-        Female
-
-    }
-
-    public enum enAccountType
-    {
-        [EnumMember(Value= "Savings Account")]
-        Savings_Account=1,
-        [EnumMember(Value ="Checking Account")]
-        Checking_Account=2,
-        [EnumMember(Value = "Fixed Deposit")]
-        Fixed_Deposit=3,
-        [EnumMember(Value = "Business Account")]
-        Business_Account=4,
-        [EnumMember(Value = "Salary_Account")]
-        Salary_Account=5,
-    }
-
+   
     public class Req_Registration
     {
         [Required(ErrorMessage = "First name is required.")]

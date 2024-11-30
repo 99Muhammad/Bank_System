@@ -7,11 +7,9 @@ namespace BankSystemProject.Model
         public int CustomerAccountId { get; set; }
         public string UserId { get; set; }
         public int AccountTypeId { get; set; }
-        public double Balance { get; set; }
         public DateTime CreatedDate { get; set; }
         public string AccountNumber { get; set; }
-        public string PinCode { get; set; }
-
+        public bool IsDeleted { get; set; }
         public Users User { get; set; }
         public AccountType AccountType { get; set; }
         public ICollection<Transaction> Transactions { get; set; }

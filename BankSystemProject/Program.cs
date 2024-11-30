@@ -80,6 +80,7 @@
 
 using BankSystemProject.Data;
 using BankSystemProject.Model;
+using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Repositories.Service;
 using BankSystemProject.Repositories.Service.AdminServices;
@@ -155,6 +156,7 @@ namespace BankSystemProject
             builder.Services.AddScoped<IAccount, AccountService>();
             builder.Services.AddScoped<JWTService>();
             builder.Services.AddScoped<IUser, UserService>();
+            builder.Services.AddScoped<ICustomerAccount, CustomerAccountsService>();
 
 
             var app = builder.Build();

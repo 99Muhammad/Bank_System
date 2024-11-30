@@ -4,9 +4,12 @@ namespace BankSystemProject.Models.DTOs
 {
     public class Req_Login
     {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid Email format.")]
-        public string Email { get; set; }
+        //[Required(ErrorMessage = "Email is required.")]
+        //[EmailAddress(ErrorMessage = "Invalid Email format.")]
+        //public string Email { get; set; }
+
+        [Required]
+        public string AccountNumber { get; set; }
   
         [Required]
         [DataType(DataType.Password)]

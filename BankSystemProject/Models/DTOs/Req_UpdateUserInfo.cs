@@ -1,5 +1,6 @@
 ﻿using BankSystemProject.Validation;
 using System.ComponentModel.DataAnnotations;
+using BankSystemProject.Shared.Enums;
 
 namespace BankSystemProject.Models.DTOs
 {

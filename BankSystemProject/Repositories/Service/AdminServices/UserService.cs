@@ -1,4 +1,5 @@
-﻿using BankSystemProject.Model;
+﻿using BankSystemProject.Data;
+using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using MailKit.Search;
@@ -12,10 +13,11 @@ namespace BankSystemProject.Repositories.Service.AdminServices
     {
 
         private readonly UserManager<Users> _userManager;
-
-        public UserService(UserManager<Users> userManager)
+        private readonly Bank_DbContext _context;
+        public UserService(UserManager<Users> userManager, Bank_DbContext _context)
         {
             _userManager = userManager;
+            this._context = _context;
         }
 
         public async Task<List<Res_UsersInfo>> FilterUsersByRoleAsync(string roleName)
@@ -23,9 +25,11 @@ namespace BankSystemProject.Repositories.Service.AdminServices
 
             //  return await _userManager.GetUsersInRoleAsync(roleName) as List<Users>;
             try
-            {  var usersInRole = await _userManager.GetUsersInRoleAsync(roleName);
+            {  var usersInRole = await _userManager
+                    .GetUsersInRoleAsync(roleName) ;
 
-                var userDtos = usersInRole.Select(u => new Res_UsersInfo
+                var userDtos = usersInRole.Where(u =>!u.IsDeleted)
+                    .Select(u => new Res_UsersInfo
                 {
                     //Id= u.Id,
                     FullName = u.FullName,
@@ -53,7 +57,9 @@ namespace BankSystemProject.Repositories.Service.AdminServices
         {
             try
             {
-                var users = await _userManager.Users.ToListAsync();
+                var users = await _userManager.Users
+                    .Where(u => !u.IsDeleted)
+                    .ToListAsync();
 
                 var usersResponse = users.Select(u => new Res_UsersInfo
                 {
@@ -75,7 +81,6 @@ namespace BankSystemProject.Repositories.Service.AdminServices
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while fetching users by role", ex);
-
             }
            
         }
@@ -86,7 +91,9 @@ namespace BankSystemProject.Repositories.Service.AdminServices
                 return null;
 
             var user = await _userManager.Users
-            .FirstOrDefaultAsync(u => u.UserName.Contains(Name) || u.FullName.Contains(Name));
+                .Where(u=>!u.IsDeleted)
+            .FirstOrDefaultAsync(u => u.UserName.Contains(Name) || u.FullName.Contains(Name))
+            ;
 
             if (user == null)
                 return null; 
@@ -110,7 +117,7 @@ namespace BankSystemProject.Repositories.Service.AdminServices
             if (string.IsNullOrWhiteSpace(userId))
                 return null; 
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _userManager.Users.Where(u => !u.IsDeleted).FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return null; 
@@ -129,23 +136,55 @@ namespace BankSystemProject.Repositories.Service.AdminServices
             };
         }
 
-        public async Task<bool> DeleteUserAsync(string UserID)
+        /* public async Task<bool> DeleteUserAsync(string UserID)
+         {
+             var user = await _userManager.FindByIdAsync(UserID);
+
+             //We can't use my function(GetUserByIdAsync) because it return an 
+             //object of type Res_UsersInfo not of type Users.
+             //  {{        var user = await GetUserByIdAsync(UserID);     }}
+             if (user == null) return false;
+
+
+             var result = await _userManager.DeleteAsync(user);
+             return result.Succeeded;
+         }*/
+
+        public async Task<bool> SoftDeleteUserAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(UserID);
-            
-            //We can't use my function(GetUserByIdAsync) because it return an 
-            //object of type Res_UsersInfo not of type Users.
-            //  {{        var user = await GetUserByIdAsync(UserID);     }}
+            // Fetch the user
+            var user = await _context.Users
+                .Include(u => u.CustomerAccounts) 
+                    .ThenInclude(ca => ca.CreditCards) 
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
             if (user == null) return false;
 
-            var result = await _userManager.DeleteAsync(user);
-            return result.Succeeded;
+            
+            user.IsDeleted = true;
+            //user.DeletedAt = DateTime.UtcNow;
+
+            
+            foreach (var account in user.CustomerAccounts)
+            {
+                account.IsDeleted = true;
+                //account.DeletedAt = DateTime.UtcNow;
+
+                foreach (var card in account.CreditCards)
+                {
+                    card.IsDeleted = true;
+                   // card.DeletedAt = DateTime.UtcNow;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> UpdateUserAsync(string userID, Req_UpdateUserInfo updateUserDto)
         {
             var user = await _userManager.FindByIdAsync(userID);
-            if (user == null) return false;
+            if (user == null||user.IsDeleted) return false;
 
             
             string FName = string.Join(" ", updateUserDto.FirstName, updateUserDto.SecondName, updateUserDto.ThirdName, updateUserDto.LastName).Trim();
@@ -164,5 +203,7 @@ namespace BankSystemProject.Repositories.Service.AdminServices
 
             return result.Succeeded;
         }
+
+
     }
 }

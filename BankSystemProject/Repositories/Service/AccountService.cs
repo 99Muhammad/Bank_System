@@ -35,30 +35,37 @@ namespace BankSystemProject.Repositories.Service
         {
             // _logger.LogInformation("Attempting to log in with email: {Email}", loginDto.Email);
 
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            // Step 1: Fetch CustomerAccount and related User
+            var customerAccount = await _context.CustomersAccounts
+                .Include(ca => ca.User) // Include related User entity
+                .FirstOrDefaultAsync(ca => ca.AccountNumber == loginDto.AccountNumber);
 
-            if (user == null)
+            // Step 2: Validate if account and user exist
+            if (customerAccount == null || customerAccount.User == null)
             {
-                return null; // User not found
+                return null; // Account or user not found
             }
 
-            // Check if the user's email or password hash is null (just in case)
-            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.PasswordHash))
-            {
-                return null; // Handle the case where the user record is incomplete
-            }
+            var user = customerAccount.User;
 
-            // Now check the password
+            // Step 3: Validate password
             if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
             {
                 return null; // Invalid password
             }
 
-            return user; // User successfully authenticated
+            // Step 4: Return a response (example includes JWT generation)
+            return new Users
+            {
+                
+                FullName = user.FullName,
+               //AccountNumber = customerAccount.AccountNumber,
+                // Token =  //enerate a JWT token for authentication
+            };
         }
 
 
-        public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
+         public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
         {
             // Check for existing user by email and username
             var existingUserByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
@@ -113,9 +120,10 @@ namespace BankSystemProject.Repositories.Service
             var userAccountInfo = new CustomerAccount
             {
                 UserId = userInfo.Id,
-                Balance = 0, // Default balance
+                // Balance = 0, // Default balance
+                // AccountNumber = hashedAccountNumber,
+                // PinCode = HashingHelper.HashString(registerDto.PinCode),
                 AccountNumber = hashedAccountNumber,
-                PinCode = HashingHelper.HashString(registerDto.PinCode),
                 AccountTypeId = (int)registerDto.accountType,
                 CreatedDate = DateTime.Now
             };
