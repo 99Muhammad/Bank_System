@@ -1,4 +1,5 @@
 ﻿using BankSystemProject.Data;
+using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Shared.Enums;
@@ -14,7 +15,7 @@ namespace BankSystemProject.Repositories.Service
             this._context = _context;
         }
 
-        public async Task<List<Res_CustomersAccounts>> GetCustomerAccountsInfoAsync()
+        public async Task<List<Res_CustomersAccounts>> GetCustomersAccountsInfoAsync()
         {
             var customerAccounts = await _context.CustomersAccounts
              .Include(ca => ca.User) 
@@ -102,5 +103,31 @@ namespace BankSystemProject.Repositories.Service
                 AccountTypeName = customerAccount.AccountType.AccountTypeName
             };
         }
+       
+        public async Task<Res_CustomersAccounts> GetAccountInfoByAccountNum(string AccountNum)
+        {
+            var customerAccounts = await _context.CustomersAccounts
+           .Include(ca => ca.User)
+           .Include(ca => ca.AccountType)
+           .FirstOrDefaultAsync(u => u.AccountNumber == AccountNum);
+
+           var AccountInfo = new Res_CustomersAccounts
+           {
+               FullName = customerAccounts.User.FullName,
+               Email = customerAccounts.User.Email,
+               Phone = customerAccounts.User.PhoneNumber,
+               Address = customerAccounts.User.Address,
+               UserRole = customerAccounts.User.Role.ToString(),
+               IsDeleted = customerAccounts.User.IsDeleted,
+               Gender = customerAccounts.User.Gender,
+               AccountTypeName = customerAccounts.AccountType.AccountTypeName,
+               CreatedDate = customerAccounts.CreatedDate,
+           };
+         
+               
+
+            return AccountInfo;
+        }
+
     }
 }

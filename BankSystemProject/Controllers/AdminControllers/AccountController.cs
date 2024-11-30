@@ -2,6 +2,7 @@
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Repositories.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -66,8 +67,7 @@ namespace BankSystemProject.Controllers.AdminControllers
             });
         }
 
-
-
+       
 
     }
 }
