@@ -160,6 +160,7 @@ namespace BankSystemProject
             builder.Services.AddScoped<IUser, UserService>();
             builder.Services.AddScoped<ICustomerAccount, CustomerAccountsService>();
             builder.Services.AddScoped<ICreditCard,CreditCardService>();
+            builder.Services.AddScoped<ITransaction, TransactionService>();
 
 
             var app = builder.Build();

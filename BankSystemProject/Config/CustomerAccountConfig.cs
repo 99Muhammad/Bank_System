@@ -18,6 +18,10 @@ namespace BankSystemProject.Config
                    .WithMany(at => at.CustomerAccounts)
                    .HasForeignKey(ca => ca.AccountTypeId);
 
+            builder.HasMany(t => t.transactions)
+                .WithOne(t => t.customerAccount)
+                .HasForeignKey(c => c.TransactionId);
+
             //builder.Property(ca => ca.AccountNumber)
             //       .HasMaxLength(50)
             //       .IsRequired();

@@ -27,7 +27,7 @@ namespace BankSystemProject.Data
 
        
         public DbSet<CustomerAccount> CustomersAccounts { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<TransactionsDepWi> Transactions { get; set; }
         public DbSet<Loan> Loans { get; set; }
         public DbSet<LoanRepayment> LoanRepayments { get; set; }
         public DbSet<CreditCard> CreditCards { get; set; }
