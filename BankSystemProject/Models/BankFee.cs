@@ -6,7 +6,7 @@
         public string FeeType { get; set; }
         public double Amount { get; set; }
 
-        public ICollection<Transaction> Transactions { get; set; }
+        public ICollection<TransactionsDepWi> Transactions { get; set; }
     }
 
 }

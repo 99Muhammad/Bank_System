@@ -13,7 +13,7 @@ namespace BankSystemProject.Model
         public Users User { get; set; }
         public double Balance { get; set; }
         public AccountType AccountType { get; set; }
-        public ICollection<Transaction> Transactions { get; set; }
+        public ICollection<TransactionsDepWi> transactions { get; set; }
         public ICollection<Loan> Loans { get; set; }
         public ICollection<CreditCard> CreditCards { get; set; }
         public ICollection<LoanApplication> LoanApplications { get; set; }

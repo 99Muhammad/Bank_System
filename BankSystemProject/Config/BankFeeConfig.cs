@@ -17,6 +17,10 @@ namespace BankSystemProject.Config
             //builder.Property(bf => bf.Amount)
             //       .HasColumnType("decimal(18,2)")
             //       .IsRequired();
+
+           
+           
+
         }
     }
 

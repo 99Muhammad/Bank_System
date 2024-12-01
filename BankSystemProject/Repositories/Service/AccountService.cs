@@ -35,7 +35,7 @@ namespace BankSystemProject.Repositories.Service
         {
             // _logger.LogInformation("Attempting to log in with email: {Email}", loginDto.Email);
 
-            // Step 1: Fetch CustomerAccount and related User
+            // Step 1: Fetch customerAccount and related User
             var customerAccount = await _context.CustomersAccounts
                 .Include(ca => ca.User) // Include related User entity
                 .FirstOrDefaultAsync(ca => ca.AccountNumber == loginDto.AccountNumber);

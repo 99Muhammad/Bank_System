@@ -17,26 +17,25 @@ namespace BankSystemProject.Repositories.Service
         }
         public async Task<bool> ImplementTransaction(Req_ImplementTransactionDto transactionDto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            //using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
                 //var account = await _context.CustomersAccounts.FindAsync(transactionDto.AccountNumber);
 
-                var transactioninfo = await _context.Transactions.Include(u => u.CustomerAccount)
-                    .FirstOrDefaultAsync(u => u.CustomerAccount.AccountNumber == transactionDto.AccountNumber);
-                
-                if (transactioninfo == null || (transactionDto.transactionType == enTransactionType.Withdraw && transactioninfo.CustomerAccount.Balance < transactionDto.transactionAmount))
+                var transactioninfo = await _context.Transactions.Include(u => u.customerAccount)
+                    .FirstOrDefaultAsync(u => u.customerAccount.AccountNumber == transactionDto.AccountNumber);
+
+                if (transactioninfo == null || (transactionDto.transactionType == enTransactionType.Withdraw && transactioninfo.customerAccount.Balance < transactionDto.transactionAmount))
                     return false;
 
-                transactioninfo.CustomerAccount.Balance += (transactionDto.transactionType == enTransactionType.Withdraw ? -transactionDto.transactionAmount : transactionDto.transactionAmount);
+                transactioninfo.customerAccount.Balance += (transactionDto.transactionType == enTransactionType.Withdraw ? -transactionDto.transactionAmount : transactionDto.transactionAmount);
 
-                
-                await _context.CustomersAccounts.AddAsync(transactioninfo.CustomerAccount.Balance);
-                
-                var newTransaction = await new Transactions
+                await _context.CustomersAccounts.AddAsync(transactioninfo.customerAccount);
+
+                var newTransaction = new TransactionsDepWi
                 {
-                    CustomerAccountId=transactioninfo.CustomerAccount.AccountId,
+                    CustomerAccountId = transactioninfo.customerAccount.CustomerAccountId,
                     TransactionType = transactionDto.transactionType.ToString(),
                     Amount = transactionDto.transactionAmount,
                     TransactionDate = DateTime.UtcNow,
@@ -45,15 +44,15 @@ namespace BankSystemProject.Repositories.Service
                 await _context.Transactions.AddAsync(newTransaction);
                 await _context.SaveChangesAsync();
 
-                if(transactionDto.transactionType.ToString()=="Deposit")
+                if (transactionDto.transactionType.ToString() == "Deposit")
                 {
                     var transactionRecord = new Res_ImplementTransactionDto
                     {
-                        Message = "Deposit successful! Your new balance is $" + 
-                        transactioninfo.CustomerAccount.Balance,
+                        Message = "Deposit successful! Your new balance is $" +
+                        transactioninfo.customerAccount.Balance,
                         Amount = transactionDto.transactionAmount,
-                        Fee = transactioninfo.CustomerAccount.BankFee,
-                        
+                        //Fee = transactioninfo.customerAccount,
+
                         Description = $"The amount of {transactionDto.transactionAmount} has been credited to your account."
                     };
                 }
@@ -62,25 +61,61 @@ namespace BankSystemProject.Repositories.Service
                     var transactionRecord = new Res_ImplementTransactionDto
                     {
                         Message = "Withdrwal successful! Your new balance is $" +
-                                            transactioninfo.CustomerAccount.Balance,
+                                            transactioninfo.customerAccount.Balance,
                         Amount = transactionDto.transactionAmount,
-                        
-                        Fee = transactioninfo.CustomerAccount.BankFee,
+
+                        //Fee = transactioninfo.customerAccount.BankFee,
 
                         Description = $"${transactionDto.transactionAmount} has been debited from your account",
                     };
                 }
-               
-                await transaction.CommitAsync();
-               
+
+                //await transaction.CommitAsync();
+
                 return true;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-               
+                //await transaction.RollbackAsync();
+
                 return false;
             }
         }
+
+        public async Task<List<Res_TransactionDetailsDto>> GetAllTransactionsAsync()
+        {
+            var transactions = await _context.Transactions
+                .Include(t => t.customerAccount)
+                .Select(t => new Res_TransactionDetailsDto
+                {
+                    TransactionId = t.TransactionId,
+                    CustomerAccountName = t.customerAccount.User.FullName,
+                    TransactionType = t.TransactionType,
+                    Amount = t.Amount,
+                    TransactionDate = t.TransactionDate,
+                })
+                .ToListAsync();
+
+            return transactions;
+        }
+
+        public async Task<List<Res_TransactionDetailsDto>> GetTransactionsByAccountNumberAsync(string accountNumber)
+        {
+            var transactions = await _context.Transactions
+                .Include(t => t.customerAccount)
+                .Where(t => t.customerAccount.AccountNumber == accountNumber)
+                .Select(t => new Res_TransactionDetailsDto
+                {
+                    TransactionId = t.TransactionId,
+                    CustomerAccountName = t.customerAccount.User.FullName,
+                    TransactionType = t.TransactionType,
+                    Amount = t.Amount,
+                    TransactionDate = t.TransactionDate,
+                })
+                .ToListAsync();
+
+            return transactions;
+        }
+
     }
 }
