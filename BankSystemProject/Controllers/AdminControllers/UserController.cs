@@ -65,7 +65,7 @@ namespace BankSystemProject.Controllers.AdminControllers
         [HttpDelete("DeleteUser/{userID}")]
         public async Task<IActionResult> DeleteUser(string userID)
         {
-            var result = await _IUser.SoftDeleteUserAsync(userID);
+            var result = await _IUser.SoftDeleteCustomerUserAsync(userID);
             if (!result)
             {
                 return NotFound($"User with ID: {userID} not found");

@@ -10,7 +10,7 @@ namespace BankSystemProject.Repositories.Interface.AdminInterfaces
         Task<Res_UsersInfo> SearchUserByFullNameOrUserNameAsync(string name);
         Task<Res_UsersInfo> GetUserByIdAsync(string userId);
         //Task<bool> DeleteUserAsync(string userID);
-        Task<bool> SoftDeleteUserAsync(string userId);
+        Task<bool> SoftDeleteCustomerUserAsync(string userId);
         Task<bool> UpdateUserAsync(string userID, Req_UpdateUserInfo updateUserDto);
 
 

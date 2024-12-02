@@ -7,11 +7,6 @@ using System.Runtime.Serialization;
 namespace BankSystemProject.Models.DTOs
 {
 
-
-
-    
-
-   
     public class Req_Registration
     {
         [Required(ErrorMessage = "First name is required.")]
@@ -55,7 +50,7 @@ namespace BankSystemProject.Models.DTOs
 
         public enAccountType accountType { get; set; }
        
-        [ValidationImageAttribute(".png,.jpg ,.jpeg")]
+        [ValidationImage(".png,.jpg ,.jpeg")]
         [DataType(DataType.Upload)]
         public IFormFile? ImageUrl { get; set; }
 
@@ -70,6 +65,9 @@ namespace BankSystemProject.Models.DTOs
 
         // Conditionally show Salary field for employees only
         [SalaryValidation(ErrorMessage = "Salary is required for employees.")]
-        public double? Salary { get; set; }
+        public int? Salary { get; set; }
+
+        [BranchValidation(ErrorMessage = "Branch is required for employees.")]
+        public enBranches? BranchName { get; set; }
     }
 }

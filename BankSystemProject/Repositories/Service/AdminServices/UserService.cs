@@ -20,6 +20,7 @@ namespace BankSystemProject.Repositories.Service.AdminServices
             this._context = _context;
         }
 
+        //For Admin Role
         public async Task<List<Res_UsersInfo>> FilterUsersByRoleAsync(string roleName)
         {
 
@@ -53,6 +54,7 @@ namespace BankSystemProject.Repositories.Service.AdminServices
             }
            // throw new NotImplementedException();
         }
+        //For Admin Role
         public async Task<List<Res_UsersInfo>> GetAllUsersAsync()
         {
             try
@@ -85,6 +87,7 @@ namespace BankSystemProject.Repositories.Service.AdminServices
            
         }
 
+        //For Admin Role
         public async Task<Res_UsersInfo> SearchUserByFullNameOrUserNameAsync(string Name)
         {
             if (string.IsNullOrWhiteSpace(Name))
@@ -111,7 +114,7 @@ namespace BankSystemProject.Repositories.Service.AdminServices
                Gender = user.Gender,
             };
         }
-
+        //For Admin Role
         public async Task<Res_UsersInfo> GetUserByIdAsync(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
@@ -150,7 +153,8 @@ namespace BankSystemProject.Repositories.Service.AdminServices
              return result.Succeeded;
          }*/
 
-        public async Task<bool> SoftDeleteUserAsync(string userId)
+        //For Admin Role
+        public async Task<bool> SoftDeleteCustomerUserAsync(string userId)
         {
             // Fetch the user
             var user = await _context.Users
@@ -181,6 +185,7 @@ namespace BankSystemProject.Repositories.Service.AdminServices
             return true;
         }
 
+        //For Admin Role
         public async Task<bool> UpdateUserAsync(string userID, Req_UpdateUserInfo updateUserDto)
         {
             var user = await _userManager.FindByIdAsync(userID);

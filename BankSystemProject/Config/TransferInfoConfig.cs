@@ -10,11 +10,9 @@ namespace BankSystemProject.Config
         {
             builder.HasKey(t => t.TransferInfoId);
 
-            builder.HasOne(t => t.User)
-                   .WithMany(ca => ca.TransferInfos)
-                   .HasForeignKey(t => t.UserId);
-
-            
+            builder.HasOne(t => t.customerAccount)
+                   .WithMany(ca => ca.transferInfos)
+                   .HasForeignKey(t => t.CustomerAccountID);
         }
     }
 }

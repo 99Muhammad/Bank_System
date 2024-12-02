@@ -10,9 +10,9 @@ namespace BankSystemProject.Config
         {
             builder.HasKey(tlu => tlu.LoggedInUserId);
 
-            builder.HasOne(tlu => tlu.User)
-                   .WithMany(u => u.TrackingLoggedInUsers)
-                   .HasForeignKey(tlu => tlu.UserId);
+            builder.HasOne(tlu => tlu.customerAccount)
+                   .WithMany(u => u.trackingLoggedInUsers)
+                   .HasForeignKey(tlu => tlu.CustomerAccountID);
 
             //builder.Property(tlu => tlu.LoginTime)
             //       .IsRequired();

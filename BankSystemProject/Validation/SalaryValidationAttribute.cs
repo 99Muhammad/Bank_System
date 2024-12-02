@@ -1,5 +1,6 @@
 ﻿using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
+using BankSystemProject.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace BankSystemProject.Validation
@@ -8,32 +9,26 @@ namespace BankSystemProject.Validation
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            //var registration = (Req_UpdateUserInfo)validationContext.ObjectInstance;
-
-            ////var registration = (Req_Registration)validationContext.ObjectInstance;
-
-            //if (value == null || !((double?)value).HasValue)
-            //{
-            //    return new ValidationResult("Salary is required for employees.");
-            //}
-
-            //return ValidationResult.Success;
-
-
-            var objectInstance = validationContext.ObjectInstance as IUser;
+          
+            var objectInstance = validationContext.ObjectInstance as Req_Registration;
 
             if (objectInstance == null)
             {
                 return new ValidationResult("Invalid object type.");
             }
 
-            if (value == null || !((double?)value).HasValue)
+            if ( enUserRole.Customer!=objectInstance.UserRole
+                && (value == null || !((int?)value).HasValue))
             {
-                return new ValidationResult("Salary is required.");
+                return new ValidationResult($"Salary is required for {objectInstance.UserRole.ToString()}.");
             }
+
 
             return ValidationResult.Success;
         }
     }
+
+
+
 
 }

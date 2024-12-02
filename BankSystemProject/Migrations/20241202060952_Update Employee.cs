@@ -5,24 +5,24 @@
 namespace BankSystemProject.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSalaryforEmployee : Migration
+    public partial class UpdateEmployee : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "EmployeeSalary",
+            migrationBuilder.AddColumn<bool>(
+                name: "IsDeleted",
                 table: "Employee",
-                type: "int",
+                type: "bit",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: false);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "EmployeeSalary",
+                name: "IsDeleted",
                 table: "Employee");
         }
     }
