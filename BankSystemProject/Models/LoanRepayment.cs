@@ -9,6 +9,8 @@
         public double RemainingBalance { get; set; }
 
         public Loan Loan { get; set; }
+
+
     }
 
 

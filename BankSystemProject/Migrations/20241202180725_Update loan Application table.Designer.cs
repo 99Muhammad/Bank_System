@@ -4,6 +4,7 @@ using BankSystemProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankSystemProject.Migrations
 {
     [DbContext(typeof(Bank_DbContext))]
-    partial class Bank_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241202180725_Update loan Application table")]
+    partial class UpdateloanApplicationtable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -389,9 +392,6 @@ namespace BankSystemProject.Migrations
                     b.Property<double>("InterestRate")
                         .HasColumnType("float");
 
-                    b.Property<int>("LoanTermMonths")
-                        .HasColumnType("int");
-
                     b.Property<string>("LoanTypeName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -406,7 +406,6 @@ namespace BankSystemProject.Migrations
                             LoanTypeId = 1,
                             Description = "A personal loan with a fixed interest rate.",
                             InterestRate = 5.5,
-                            LoanTermMonths = 60,
                             LoanTypeName = "Personal Loan"
                         },
                         new
@@ -414,7 +413,6 @@ namespace BankSystemProject.Migrations
                             LoanTypeId = 2,
                             Description = "A loan to purchase a home with lower interest rates.",
                             InterestRate = 3.7999999999999998,
-                            LoanTermMonths = 360,
                             LoanTypeName = "Home Loan"
                         },
                         new
@@ -422,7 +420,6 @@ namespace BankSystemProject.Migrations
                             LoanTypeId = 3,
                             Description = "A loan to purchase a vehicle with medium interest rates.",
                             InterestRate = 4.2000000000000002,
-                            LoanTermMonths = 72,
                             LoanTypeName = "Auto Loan"
                         },
                         new
@@ -430,7 +427,6 @@ namespace BankSystemProject.Migrations
                             LoanTypeId = 4,
                             Description = "A loan to support higher education costs with subsidized interest rates.",
                             InterestRate = 3.0,
-                            LoanTermMonths = 120,
                             LoanTypeName = "Student Loan"
                         });
                 });
