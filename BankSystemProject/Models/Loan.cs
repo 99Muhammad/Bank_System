@@ -14,6 +14,9 @@
         public LoanType LoanType { get; set; }
         public ICollection<LoanRepayment> LoanRepayments { get; set; }
      
+
+
+
     }
 
 }

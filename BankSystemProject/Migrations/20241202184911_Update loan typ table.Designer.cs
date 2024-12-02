@@ -4,6 +4,7 @@ using BankSystemProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankSystemProject.Migrations
 {
     [DbContext(typeof(Bank_DbContext))]
-    partial class Bank_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241202184911_Update loan typ table")]
+    partial class Updateloantyptable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -312,9 +315,8 @@ namespace BankSystemProject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EmploymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("EmploymentStatus")
+                        .HasColumnType("int");
 
                     b.Property<double>("Income")
                         .HasColumnType("float");

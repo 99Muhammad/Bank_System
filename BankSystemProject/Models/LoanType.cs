@@ -7,6 +7,8 @@
         public double InterestRate { get; set; }
         public string Description { get; set; }
 
+        public int LoanTermMonths { get; set;}
+
         public ICollection<Loan> Loans { get; set; }
         public ICollection<LoanApplication> LoanApplications { get; set; }
     }
