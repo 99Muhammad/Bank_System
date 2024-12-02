@@ -41,7 +41,7 @@ namespace BankSystemProject.Repositories.Service
         public async Task<Res_UpdateAccTypeInCustomerAcc> UpdateAccTypeInCustomerAccByUserID(Req_UpdateAccTypeInCustomerAcc req_UpdateAccTypeIn, string UserID)
         {
 
-            // Load customer account along with User and AccountType data
+            // Load customer account along with customerAccount and AccountType data
             // Fetch customer account with related entities
             var customerAccount = await _context.CustomersAccounts
                 .Include(ca => ca.User)
@@ -111,6 +111,10 @@ namespace BankSystemProject.Repositories.Service
            .Include(ca => ca.AccountType)
            .FirstOrDefaultAsync(u => u.AccountNumber == AccountNum);
 
+            if(customerAccounts==null)
+            {
+                return null;
+            }
            var AccountInfo = new Res_CustomersAccounts
            {
                FullName = customerAccounts.User.FullName,

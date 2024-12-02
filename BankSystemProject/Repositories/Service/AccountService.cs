@@ -4,6 +4,7 @@ using BankSystemProject.Helpers;
 using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
+using BankSystemProject.Shared.Enums;
 using Mailjet.Client.Resources;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -30,14 +31,13 @@ namespace BankSystemProject.Repositories.Service
             _logger = logger;
 
         }
-
         public async Task<Users> LoginAsync(Req_Login loginDto)
         {
             // _logger.LogInformation("Attempting to log in with email: {Email}", loginDto.Email);
 
-            // Step 1: Fetch customerAccount and related User
+            // Step 1: Fetch customerAccount and related customerAccount
             var customerAccount = await _context.CustomersAccounts
-                .Include(ca => ca.User) // Include related User entity
+                .Include(ca => ca.User) // Include related customerAccount entity
                 .FirstOrDefaultAsync(ca => ca.AccountNumber == loginDto.AccountNumber);
 
             // Step 2: Validate if account and user exist
@@ -63,7 +63,6 @@ namespace BankSystemProject.Repositories.Service
                 // Token =  //enerate a JWT token for authentication
             };
         }
-
 
          public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
         {
@@ -97,39 +96,46 @@ namespace BankSystemProject.Repositories.Service
                 LockoutEnd = DateTime.Now,
             };
 
-            // Create user
             var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
             if (!result.Succeeded)
             {
                 return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
             }
 
-            // Ensure role exists
-            //await EnsureRoleExistsAsync(registerDto.enUserRole.ToString());
-
             // Assign role to user
             var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
+           
             if (!roleResult.Succeeded)
             {
                 return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
             }
 
-
-
-            // Create user account
-            var userAccountInfo = new CustomerAccount
+            if (registerDto.UserRole == enUserRole.Customer)
             {
-                UserId = userInfo.Id,
-                // Balance = 0, // Default balance
-                // AccountNumber = hashedAccountNumber,
-                // PinCode = HashingHelper.HashString(registerDto.PinCode),
-                AccountNumber = hashedAccountNumber,
-                AccountTypeId = (int)registerDto.accountType,
-                CreatedDate = DateTime.Now
-            };
+                var userAccountInfo = new CustomerAccount
+                {
+                    UserId = userInfo.Id,
+                    AccountNumber = hashedAccountNumber,
+                    AccountTypeId = (int)registerDto.accountType,
+                    CreatedDate = DateTime.Now
+                };
+                _context.CustomersAccounts.Add(userAccountInfo);
+                await _context.SaveChangesAsync();
+            }
 
-            _context.CustomersAccounts.Add(userAccountInfo);
-            await _context.SaveChangesAsync();
+
+            if (registerDto.UserRole != enUserRole.Customer)
+            {
+                var newEmployee = new Employee
+                {
+                    UserId = userInfo.Id,
+                    HireDate = DateTime.Now,
+                    EmployeeSalary = registerDto.Salary,
+                    BranchID=(int)registerDto.BranchName,
+                };
+                _context.Employee.Add(newEmployee);
+                await _context.SaveChangesAsync();
+            }
 
             return new Res_Registration
             {
@@ -148,7 +154,7 @@ namespace BankSystemProject.Repositories.Service
             while (!isUnique)
             {
 
-                AccountNum = random.NextInt64(1000000000, 9999999999L).ToString();
+                 AccountNum = random.Next(1000, 10000).ToString();
                 var existingUser = await _context.CustomersAccounts
                     .FirstOrDefaultAsync(u => u.AccountNumber == AccountNum);
 

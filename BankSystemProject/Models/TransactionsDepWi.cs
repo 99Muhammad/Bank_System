@@ -11,7 +11,7 @@
         public int? BankFeeId { get; set; }
 
         public CustomerAccount customerAccount { get; set; }
-        public BankFee BankFee { get; set; }
+      //  public BankFee BankFee { get; set; }
     }
 
 }

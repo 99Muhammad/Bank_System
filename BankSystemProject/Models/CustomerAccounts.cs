@@ -17,6 +17,10 @@ namespace BankSystemProject.Model
         public ICollection<Loan> Loans { get; set; }
         public ICollection<CreditCard> CreditCards { get; set; }
         public ICollection<LoanApplication> LoanApplications { get; set; }
+        public ICollection<TransferInfo> transferInfos { get; set; }
+        public ICollection<TrackingLoggedInUser> trackingLoggedInUsers { get; set; }
+
+
     }
 
 }

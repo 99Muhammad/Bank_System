@@ -31,7 +31,7 @@ namespace BankSystemProject.Data
         public DbSet<Loan> Loans { get; set; }
         public DbSet<LoanRepayment> LoanRepayments { get; set; }
         public DbSet<CreditCard> CreditCards { get; set; }
-        public DbSet<BankFee> BankFees { get; set; }
+        //public DbSet<BankFee> BankFees { get; set; }
         public DbSet<LoanApplication> LoanApplications { get; set; }
         public DbSet<ATMMachine> ATMMachines { get; set; }
         public DbSet<TrackingLoggedInUser> TrackingLoggedInUsers { get; set; }
@@ -39,5 +39,6 @@ namespace BankSystemProject.Data
         public DbSet<AccountType> AccountTypes { get; set; }
         public DbSet<TransferInfo> TransferInfo { get; set; }
         public DbSet<LoanType> LoanTypes { get; set; }
+        public DbSet<Employee> Employee { get; set; }
     }
 }

@@ -15,9 +15,10 @@ namespace BankSystemProject.Model
         public string Gender { get; set; }
 
         public ICollection<CustomerAccount> CustomerAccounts { get; set; }
-        public ICollection<Branch> ManagedBranches { get; set; }
-        public ICollection<TransferInfo> TransferInfos { get; set; }
-        public ICollection<TrackingLoggedInUser> TrackingLoggedInUsers { get; set; }
+       // public ICollection<Branch> ManagedBranches { get; set; }
+        
+        //public ICollection<TransferInfo> TransferInfos { get; set; }
+       // public ICollection<TrackingLoggedInUser> TrackingLoggedInUsers { get; set; }
         public ICollection<Employee> employees { get; set; }
     }
 

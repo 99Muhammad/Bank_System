@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankSystemProject.Migrations
 {
     [DbContext(typeof(Bank_DbContext))]
-    [Migration("20241130210945_delete Balanc from CreditCa and add it to CustomerAcco")]
-    partial class deleteBalancfromCreditCaandaddittoCustomerAcco
+    [Migration("20241201122110_Update relationships")]
+    partial class Updaterelationships
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,26 +102,6 @@ namespace BankSystemProject.Migrations
                             AccountTypeName = "Salary Account",
                             Description = "A checking account used for receiving employee salaries directly from employers."
                         });
-                });
-
-            modelBuilder.Entity("BankSystemProject.Model.BankFee", b =>
-                {
-                    b.Property<int>("BankFeeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BankFeeId"));
-
-                    b.Property<double>("Amount")
-                        .HasColumnType("float");
-
-                    b.Property<string>("FeeType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("BankFeeId");
-
-                    b.ToTable("BankFees");
                 });
 
             modelBuilder.Entity("BankSystemProject.Model.Branch", b =>
@@ -390,30 +370,26 @@ namespace BankSystemProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoggedInUserId"));
 
+                    b.Property<int>("CustomerAccountID")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("LoginTime")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LogoutTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("LoggedInUserId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CustomerAccountID");
 
                     b.ToTable("TrackingLoggedInUsers");
                 });
 
-            modelBuilder.Entity("BankSystemProject.Model.Transaction", b =>
+            modelBuilder.Entity("BankSystemProject.Model.TransactionsDepWi", b =>
                 {
                     b.Property<int>("TransactionId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
 
                     b.Property<double>("Amount")
                         .HasColumnType("float");
@@ -432,10 +408,6 @@ namespace BankSystemProject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("TransactionId");
-
-                    b.HasIndex("BankFeeId");
-
-                    b.HasIndex("CustomerAccountId");
 
                     b.ToTable("Transactions");
                 });
@@ -468,16 +440,15 @@ namespace BankSystemProject.Migrations
                     b.Property<double>("BalanceToBeforeTransfer")
                         .HasColumnType("float");
 
+                    b.Property<int>("CustomerAccountID")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("DateTimeTransfer")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("TransferInfoId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CustomerAccountID");
 
                     b.ToTable("TransferInfo");
                 });
@@ -825,41 +796,35 @@ namespace BankSystemProject.Migrations
 
             modelBuilder.Entity("BankSystemProject.Model.TrackingLoggedInUser", b =>
                 {
-                    b.HasOne("BankSystemProject.Model.Users", "User")
-                        .WithMany("TrackingLoggedInUsers")
-                        .HasForeignKey("UserId")
+                    b.HasOne("BankSystemProject.Model.CustomerAccount", "customerAccount")
+                        .WithMany("trackingLoggedInUsers")
+                        .HasForeignKey("CustomerAccountID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("customerAccount");
                 });
 
-            modelBuilder.Entity("BankSystemProject.Model.Transaction", b =>
+            modelBuilder.Entity("BankSystemProject.Model.TransactionsDepWi", b =>
                 {
-                    b.HasOne("BankSystemProject.Model.BankFee", "BankFee")
-                        .WithMany("Transactions")
-                        .HasForeignKey("BankFeeId");
-
-                    b.HasOne("BankSystemProject.Model.CustomerAccount", "CustomerAccount")
-                        .WithMany("Transactions")
-                        .HasForeignKey("CustomerAccountId")
+                    b.HasOne("BankSystemProject.Model.CustomerAccount", "customerAccount")
+                        .WithMany("transactions")
+                        .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BankFee");
-
-                    b.Navigation("CustomerAccount");
+                    b.Navigation("customerAccount");
                 });
 
             modelBuilder.Entity("BankSystemProject.Model.TransferInfo", b =>
                 {
-                    b.HasOne("BankSystemProject.Model.Users", "User")
-                        .WithMany("TransferInfos")
-                        .HasForeignKey("UserId")
+                    b.HasOne("BankSystemProject.Model.CustomerAccount", "customerAccount")
+                        .WithMany("transferInfos")
+                        .HasForeignKey("CustomerAccountID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("customerAccount");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -918,11 +883,6 @@ namespace BankSystemProject.Migrations
                     b.Navigation("CustomerAccounts");
                 });
 
-            modelBuilder.Entity("BankSystemProject.Model.BankFee", b =>
-                {
-                    b.Navigation("Transactions");
-                });
-
             modelBuilder.Entity("BankSystemProject.Model.Branch", b =>
                 {
                     b.Navigation("ATMMachines");
@@ -936,7 +896,11 @@ namespace BankSystemProject.Migrations
 
                     b.Navigation("Loans");
 
-                    b.Navigation("Transactions");
+                    b.Navigation("trackingLoggedInUsers");
+
+                    b.Navigation("transactions");
+
+                    b.Navigation("transferInfos");
                 });
 
             modelBuilder.Entity("BankSystemProject.Model.Employee", b =>
@@ -961,10 +925,6 @@ namespace BankSystemProject.Migrations
                     b.Navigation("CustomerAccounts");
 
                     b.Navigation("ManagedBranches");
-
-                    b.Navigation("TrackingLoggedInUsers");
-
-                    b.Navigation("TransferInfos");
 
                     b.Navigation("employees");
                 });

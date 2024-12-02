@@ -10,9 +10,9 @@ namespace BankSystemProject.Config
         {
             builder.HasKey(b => b.BranchId);
 
-            builder.HasOne(u => u.Manager)
-                .WithMany(u => u.ManagedBranches)
-                .HasForeignKey(u => u.ManagerId);
+            builder.HasMany(u => u.employees)
+                .WithOne(u => u.BranchEmployee)
+                .HasForeignKey(u => u.BranchID);
 
 
             //builder.Property(b => b.BranchName)

@@ -47,8 +47,8 @@ namespace BankSystemProject.Config
               .HasColumnType("datetime");
 
             //builder.HasMany(u=>u.TrackingLoggedInUsers)
-            //    .WithOne(ca => ca.User)
-            //    .HasForeignKey(ca => ca.UserId);
+            //    .WithOne(ca => ca.customerAccount)
+            //    .HasForeignKey(ca => ca.CustomerAccountID);
 
 
 

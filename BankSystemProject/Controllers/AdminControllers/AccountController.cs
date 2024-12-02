@@ -34,7 +34,7 @@ namespace BankSystemProject.Controllers.AdminControllers
 
             if (loginResult == null)
             {
-                return Unauthorized("Invalid Email or Password");
+                return Unauthorized("Invalid UserName or Password");
             }
 
             var token = _jwtService.GenerateToken(loginResult);
