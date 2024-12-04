@@ -17,7 +17,7 @@ namespace BankSystemProject.Config
             //       .HasMaxLength(200);
 
 
-            //builder.Property(u => u.Email)
+            //builder.Property(u => u.UserName)
             //       .HasMaxLength(100);
                        
 

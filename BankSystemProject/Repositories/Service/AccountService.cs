@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MimeKit.Encodings;
+using System.Text.RegularExpressions;
 
 namespace BankSystemProject.Repositories.Service
 {
@@ -21,68 +22,55 @@ namespace BankSystemProject.Repositories.Service
         private readonly UserManager<Users> _userManager;
         private readonly SignInManager<Users> _signInManager;
         private readonly ILogger<AccountController> _logger;
+        private readonly JWTService _jwtService;
 
         public AccountService(Bank_DbContext _context, UserManager<Users> _userManager
-            , SignInManager<Users> _signInManager, ILogger<AccountController> logger)
+            , SignInManager<Users> _signInManager, ILogger<AccountController> logger
+            ,JWTService _jwtService)
         {
             this._context = _context;
             this._userManager = _userManager;
             this._signInManager = _signInManager;
             _logger = logger;
+            this._jwtService = _jwtService;
 
         }
-        public async Task<Users> LoginAsync(Req_Login loginDto)
+        public async Task<string> LoginAsync(Req_Login loginDto)
         {
-            // _logger.LogInformation("Attempting to log in with email: {Email}", loginDto.Email);
-
-            // Step 1: Fetch customerAccount and related customerAccount
-            var customerAccount = await _context.CustomersAccounts
-                .Include(ca => ca.User) // Include related customerAccount entity
-                .FirstOrDefaultAsync(ca => ca.AccountNumber == loginDto.AccountNumber);
-
-            // Step 2: Validate if account and user exist
-            if (customerAccount == null || customerAccount.User == null)
+            var user = await _userManager.FindByNameAsync(loginDto.UserName); 
+            if (user == null)
             {
-                return null; // Account or user not found
+                return null; 
             }
-
-            var user = customerAccount.User;
-
-            // Step 3: Validate password
             if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
             {
-                return null; // Invalid password
+                return null; 
             }
 
-            // Step 4: Return a response (example includes JWT generation)
-            return new Users
-            {
-                
-                FullName = user.FullName,
-               //AccountNumber = customerAccount.AccountNumber,
-                // Token =  //enerate a JWT token for authentication
-            };
+            var jwtToken = _jwtService.GenerateJwtToken(user); 
+
+            return jwtToken;
         }
 
-         public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
+        private async Task<Res_Registration> ValidateUserAsync(Req_Registration registerDto)
         {
-            // Check for existing user by email and username
             var existingUserByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
             if (existingUserByEmail != null)
             {
-                return new Res_Registration { Message = "A user with this email already exists." };
+                return new Res_Registration { Message = "A user with this email already exists.", Success = false };
             }
 
             var existingUserByName = await _userManager.FindByNameAsync(registerDto.UserName);
             if (existingUserByName != null)
             {
-                return new Res_Registration { Message = "A user with this username already exists." };
+                return new Res_Registration { Message = "A user with this username already exists.", Success = false };
             }
 
-            // Generate account number and create user object
-            string accountNumber = await GenerateUniqueAccountNumAsync();
-            string hashedAccountNumber = HashingHelper.HashString(accountNumber);
-            var userInfo = new Users
+            return new Res_Registration { Success = true };
+        }
+        private Users CreateUserInfo(Req_Registration registerDto)
+        {
+            return new Users
             {
                 FullName = string.Join(" ", registerDto.FirstName, registerDto.SecondName, registerDto.ThirdName, registerDto.LastName).Trim(),
                 PhoneNumber = registerDto.PhoneNumber,
@@ -92,9 +80,65 @@ namespace BankSystemProject.Repositories.Service
                 Email = registerDto.Email,
                 Role = registerDto.UserRole.ToString(),
                 DateOfBirth = registerDto.DateOfBirth,
-                PersonalImage = "jj.png",
+                PersonalImage = "default.png",
                 LockoutEnd = DateTime.Now,
             };
+        }
+        private async Task<Res_Registration> HandleCustomerAccountAsync(string userId, Req_Registration registerDto)
+        {
+            var existingCustomerAccount = await _context.CustomersAccounts
+                .FirstOrDefaultAsync(ca => ca.UserId == userId && ca.AccountTypeId == (int)registerDto.accountType);
+
+            if (existingCustomerAccount != null)
+            {
+                return new Res_Registration
+                {
+                    Message = "A customer account with the same type already exists.",
+                    Success = false
+                };
+            }
+
+            string accountNumber = await GenerateUniqueAccountNumAsync();
+            string encodedAccountNumber = Base64Helper.Encode(accountNumber);
+
+            var userAccountInfo = new CustomerAccount
+            {
+                UserId = userId,
+                AccountNumber = encodedAccountNumber,
+                AccountTypeId = (int)registerDto.accountType,
+                CreatedDate = DateTime.Now
+            };
+
+            _context.CustomersAccounts.Add(userAccountInfo);
+            await _context.SaveChangesAsync();
+
+            return new Res_Registration
+            {
+                Success = true,
+                AccountNmber = accountNumber
+            };
+        }
+        private async Task HandleEmployeeAsync(string userId, Req_Registration registerDto)
+        {
+            var newEmployee = new Employee
+            {
+                UserId = userId,
+                HireDate = DateTime.Now,
+                EmployeeSalary = registerDto.Salary,
+                BranchID = (int)registerDto.BranchName,
+            };
+            _context.Employee.Add(newEmployee);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
+        {
+            // Validate the user details
+            var validationResult = await ValidateUserAsync(registerDto);
+            if (!validationResult.Success)
+                return validationResult;
+
+            // Create the user
+            var userInfo = CreateUserInfo(registerDto);
 
             var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
             if (!result.Succeeded)
@@ -102,49 +146,32 @@ namespace BankSystemProject.Repositories.Service
                 return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
             }
 
-            // Assign role to user
+            // Assign role
             var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
-           
             if (!roleResult.Succeeded)
             {
                 return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
             }
-
+            var accountCreationResult=new Res_Registration() ;
+            // Handle role-specific logic
             if (registerDto.UserRole == enUserRole.Customer)
             {
-                var userAccountInfo = new CustomerAccount
-                {
-                    UserId = userInfo.Id,
-                    AccountNumber = hashedAccountNumber,
-                    AccountTypeId = (int)registerDto.accountType,
-                    CreatedDate = DateTime.Now
-                };
-                _context.CustomersAccounts.Add(userAccountInfo);
-                await _context.SaveChangesAsync();
+                 accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
+                if (!accountCreationResult.Success)
+                    return accountCreationResult;
             }
-
-
-            if (registerDto.UserRole != enUserRole.Customer)
+            else
             {
-                var newEmployee = new Employee
-                {
-                    UserId = userInfo.Id,
-                    HireDate = DateTime.Now,
-                    EmployeeSalary = registerDto.Salary,
-                    BranchID=(int)registerDto.BranchName,
-                };
-                _context.Employee.Add(newEmployee);
-                await _context.SaveChangesAsync();
+                await HandleEmployeeAsync(userInfo.Id, registerDto);
             }
 
             return new Res_Registration
             {
                 UserName = registerDto.UserName,
-                AccountNmber = accountNumber,
+                AccountNmber = registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
                 Success = true
             };
         }
-
         private async Task<string> GenerateUniqueAccountNumAsync()
         {
             Random random = new Random();

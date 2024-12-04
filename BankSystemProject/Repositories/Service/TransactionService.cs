@@ -21,7 +21,7 @@ namespace BankSystemProject.Repositories.Service
 
             try
             {
-                //var account = await _context.CustomersAccounts.FindAsync(transactionDto.AccountNumber);
+                //var account = await _context.CustomersAccounts.FindAsync(transactionDto.UserName);
 
                 var transactioninfo = await _context.Transactions.Include(u => u.customerAccount)
                     .FirstOrDefaultAsync(u => u.customerAccount.AccountNumber == transactionDto.AccountNumber);
