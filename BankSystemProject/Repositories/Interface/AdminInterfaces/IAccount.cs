@@ -7,6 +7,6 @@ namespace BankSystemProject.Repositories.Interface.AdminInterfaces
     {
         Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto);
 
-        Task<Users> LoginAsync(Req_Login loginDto);
+        Task<string> LoginAsync(Req_Login loginDto);
     }
 }

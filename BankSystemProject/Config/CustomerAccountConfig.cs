@@ -22,7 +22,7 @@ namespace BankSystemProject.Config
                 .WithOne(t => t.customerAccount)
                 .HasForeignKey(c => c.TransactionId);
 
-            //builder.Property(ca => ca.AccountNumber)
+            //builder.Property(ca => ca.UserName)
             //       .HasMaxLength(50)
             //       .IsRequired();
 

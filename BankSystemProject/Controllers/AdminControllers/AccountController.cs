@@ -37,9 +37,9 @@ namespace BankSystemProject.Controllers.AdminControllers
                 return Unauthorized("Invalid UserName or Password");
             }
 
-            var token = _jwtService.GenerateToken(loginResult);
+           // var token = _jwtService.GenerateJwtToken(loginResult);
             //var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-            return Ok(new { Token = token });
+            return Ok(new { Token = loginResult });
         }
 
 
