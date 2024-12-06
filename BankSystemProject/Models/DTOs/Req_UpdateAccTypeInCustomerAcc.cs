@@ -7,6 +7,9 @@ namespace BankSystemProject.Models.DTOs
     {
        // public int customerAccountID { get; set; }
         public enAccountType AccountTypeName { get; set; }
-     
+        public string OldAccountNumber { get; set; }
+        public string NewAccountNumber { get; set; }
+        public string ConfirmNewAccountNumber { get; set; }
+
     }
 }

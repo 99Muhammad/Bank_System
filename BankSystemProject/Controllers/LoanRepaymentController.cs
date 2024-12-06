@@ -1,4 +1,5 @@
 ﻿using BankSystemProject.Model;
+using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,25 @@ namespace BankSystemProject.Controllers
         {
             await _repaymentService.CreateLoanRepaymentAsync(repayment);
             return CreatedAtAction(nameof(GetById), new { id = repayment.LoanRepaymentId }, repayment);
+        }
+
+
+        [HttpPost("repay")]
+        public async Task<IActionResult> ProcessRepayment([FromBody] Req_LoanRepaymentDto repaymentDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            var result = await _repaymentService.ProcessLoanRepaymentAsync(repaymentDto);
+
+            if (result.Message.Contains("not found") || result.Message.Contains("exceeds"))
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result);
         }
     }
 }

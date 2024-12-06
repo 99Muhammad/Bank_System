@@ -15,15 +15,16 @@ namespace BankSystemProject.Model
         public double LoanAmount { get; set; }
         public double InterestRate { get; set; }
         public int LoanTermMonths { get; set; }  // Term in months
-        public int CustomerAccountId { get; set; }
+        public int CustomerAccountId { get; set; }//fk
         public int LoanTypeId { get; set; }
         public DateTime ApplicationDate { get; set; }
-        public CustomerAccount CustomerAccount { get; set; }
+        public CustomerAccount CustomersAccounts { get; set; }
         public LoanType LoanType { get; set; }
         public string RepaymentSchedule { get; set; }                                             
         public bool IsSecuredLoan { get; set; }
         public string CollateralDescription { get; set; }
-        public string ApplicationStatus { get; set; }  
+        public string ApplicationStatus { get; set; }
+        public Loan loan { get; set; }
 
     }
 

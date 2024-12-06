@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankSystemProject.Migrations
 {
     [DbContext(typeof(Bank_DbContext))]
-    [Migration("20241202191153_Update loan typ")]
-    partial class Updateloantyp
+    [Migration("20241206192738_Update transaction ")]
+    partial class Updatetransaction
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -140,6 +140,10 @@ namespace BankSystemProject.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double>("CreditLimit")
                         .HasColumnType("float");
 
@@ -245,6 +249,9 @@ namespace BankSystemProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoanId"));
 
+                    b.Property<DateTime>("ApprovedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("CustomerAccountId")
                         .HasColumnType("int");
 
@@ -253,6 +260,9 @@ namespace BankSystemProject.Migrations
 
                     b.Property<double>("LoanAmount")
                         .HasColumnType("float");
+
+                    b.Property<int>("LoanApplicationId")
+                        .HasColumnType("int");
 
                     b.Property<int>("LoanTypeId")
                         .HasColumnType("int");
@@ -267,6 +277,9 @@ namespace BankSystemProject.Migrations
                     b.HasKey("LoanId");
 
                     b.HasIndex("CustomerAccountId");
+
+                    b.HasIndex("LoanApplicationId")
+                        .IsUnique();
 
                     b.HasIndex("LoanTypeId");
 
@@ -465,7 +478,10 @@ namespace BankSystemProject.Migrations
             modelBuilder.Entity("BankSystemProject.Model.TransactionsDepWi", b =>
                 {
                     b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
 
                     b.Property<double>("Amount")
                         .HasColumnType("float");
@@ -484,6 +500,8 @@ namespace BankSystemProject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("TransactionId");
+
+                    b.HasIndex("CustomerAccountId");
 
                     b.ToTable("Transactions");
                 });
@@ -819,23 +837,31 @@ namespace BankSystemProject.Migrations
                     b.HasOne("BankSystemProject.Model.CustomerAccount", "CustomerAccount")
                         .WithMany("Loans")
                         .HasForeignKey("CustomerAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BankSystemProject.Model.LoanApplication", "LoanApplication")
+                        .WithOne("loan")
+                        .HasForeignKey("BankSystemProject.Model.Loan", "LoanApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BankSystemProject.Model.LoanType", "LoanType")
                         .WithMany("Loans")
                         .HasForeignKey("LoanTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("CustomerAccount");
+
+                    b.Navigation("LoanApplication");
 
                     b.Navigation("LoanType");
                 });
 
             modelBuilder.Entity("BankSystemProject.Model.LoanApplication", b =>
                 {
-                    b.HasOne("BankSystemProject.Model.CustomerAccount", "CustomerAccount")
+                    b.HasOne("BankSystemProject.Model.CustomerAccount", "CustomersAccounts")
                         .WithMany("LoanApplications")
                         .HasForeignKey("CustomerAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -847,7 +873,7 @@ namespace BankSystemProject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("CustomerAccount");
+                    b.Navigation("CustomersAccounts");
 
                     b.Navigation("LoanType");
                 });
@@ -878,7 +904,7 @@ namespace BankSystemProject.Migrations
                 {
                     b.HasOne("BankSystemProject.Model.CustomerAccount", "customerAccount")
                         .WithMany("transactions")
-                        .HasForeignKey("TransactionId")
+                        .HasForeignKey("CustomerAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -977,6 +1003,12 @@ namespace BankSystemProject.Migrations
             modelBuilder.Entity("BankSystemProject.Model.Loan", b =>
                 {
                     b.Navigation("LoanRepayments");
+                });
+
+            modelBuilder.Entity("BankSystemProject.Model.LoanApplication", b =>
+                {
+                    b.Navigation("loan")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BankSystemProject.Model.LoanType", b =>

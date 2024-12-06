@@ -17,10 +17,12 @@ namespace BankSystemProject.Repositories.Service
             this.userManager = userManager;
         }
         
-        public async Task<Res_EmployeeInfoDto> GetEmployeeInfoByUsernameAsync(string username)
+        public async Task<Res_EmployeeInfoDto> GetEmployeeInfoByUsernameAsync(string username,bool includeDeleted)
         {
-            
             var employeeInfo = await _context.Employee
+                .Include(e => e.User)
+                .Include(e => e.BranchEmployee)
+                .Where(e => includeDeleted ? e.IsDeleted : !e.IsDeleted)
                 .FirstOrDefaultAsync(e => e.User.UserName == username);
 
             if (employeeInfo == null)
@@ -30,7 +32,7 @@ namespace BankSystemProject.Repositories.Service
 
             return new Res_EmployeeInfoDto
             {
-                
+
                 FullName = employeeInfo.User.FullName,
                 Email = employeeInfo.User.Email,
                 PhoneNumber = employeeInfo.User.PhoneNumber,
@@ -39,8 +41,8 @@ namespace BankSystemProject.Repositories.Service
                 Salary = employeeInfo.EmployeeSalary,
                 HireDate = employeeInfo.HireDate,
                 //PersonalImage=employeeInfo.PersonalImage,
-                BranchName=employeeInfo.BranchEmployee.BranchName,
-                BranchLocation=employeeInfo.BranchEmployee.BranchLocation,
+                BranchName = employeeInfo.BranchEmployee.BranchName,
+                BranchLocation = employeeInfo.BranchEmployee.BranchLocation,
 
             };
         }
@@ -49,24 +51,27 @@ namespace BankSystemProject.Repositories.Service
         public async Task<bool> UpdateEmployeeInfoByUserNameAsync(string username, Req_UpdateEmployeeInfoDto updateDto)
         {
            
-            var updateEmployee = await _context.Employee.FirstOrDefaultAsync(e => e.User.UserName == updateDto.UserName);
+            var updateEmployee = await _context.Employee
+                .Include(e=>e.User)
+                .Include(e=>e.BranchEmployee)
+                .FirstOrDefaultAsync(e => e.User.UserName ==username);
             if (updateEmployee == null)
             {
                 return false;      
             }
 
-            var user = await userManager.FindByNameAsync(updateEmployee.User.Id);
+            //var user = await userManager.FindByNameAsync(updateEmployee.User.Id);
             
-            user.Email = updateDto.Email;
-            user.PhoneNumber = updateDto.PhoneNumber ;
-            user.Address = updateDto.Address ;
-            user.PasswordHash=updateDto.Password;
+            updateEmployee.User.Email = updateDto.Email;
+            updateEmployee.User.PhoneNumber = updateDto.PhoneNumber ;
+            updateEmployee.User.Address = updateDto.Address ;
+            updateEmployee.User.PasswordHash=updateDto.Password;
             //user.PersonalImage = updateDto.ImageUrl;
-            user.UserName=updateDto.UserName;
+            updateEmployee.User.UserName=updateDto.UserName;
             
             // Save changes
             _context.Employee.Update(updateEmployee);
-            _context.Users.Update(user); 
+            //_context.Users.UpdateLoanApplication(user); 
             await _context.SaveChangesAsync();
 
             return true;
@@ -77,31 +82,7 @@ namespace BankSystemProject.Repositories.Service
         {
             return await _context.Employee
                                  .Include(e => e.User)  
-                                 .Where(e => !e.IsDeleted) 
                                  .ToListAsync();
-        }
-
-        public async Task<bool> UpdateEmployeeInfoByIDAsync(string UserID, Req_UpdateEmployeeInfoByAdminDto updateDto)
-        {
-
-            var updateEmployee = await _context.Employee.FirstOrDefaultAsync(e => e.User.Id == UserID);
-            if (updateEmployee == null)
-            {
-                return false;
-            }
-
-            var user = await userManager.FindByNameAsync(updateEmployee.User.Id);
-
-            user.Role = updateDto.UserRole.ToString();
-            updateEmployee.EmployeeSalary = updateDto.Salary;
-            updateEmployee.BranchID = (int)updateDto.BrnachName;
-
-            // Save changes
-            _context.Employee.Update(updateEmployee);
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-
-            return true;
         }
 
         public async Task<bool> SoftDeleteEmployeeAsync(string UserID)
@@ -123,6 +104,33 @@ namespace BankSystemProject.Repositories.Service
             }
 
             await _context.SaveChangesAsync();  
+
+            return true;
+        }
+
+        public async Task<bool> UpdateEmployeeInfoByIDAsync(int EmployeeID, Req_UpdateEmployeeInfoByAdminDto updateDto)
+        {
+
+            var updateEmployee = await _context.Employee
+                .Include(e => e.User)
+                .Include(e => e.BranchEmployee)
+                .FirstOrDefaultAsync(e => e.EmployeeId == EmployeeID);
+            if (updateEmployee == null)
+            {
+                return false;
+            }
+
+            //var user = await userManager.FindByNameAsync(updateEmployee.User.Id);
+
+            updateEmployee.User.Role = updateDto.UserRole.ToString();
+            updateEmployee.EmployeeSalary = updateDto.Salary;
+            updateEmployee.BranchID = (int)updateDto.BrnachName;
+            updateEmployee.IsDeleted = updateDto.IsDeleted;
+
+            // Save changes
+            _context.Employee.Update(updateEmployee);
+            //_context.Users.UpdateLoanApplication(user);
+            await _context.SaveChangesAsync();
 
             return true;
         }

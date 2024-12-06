@@ -1,6 +1,8 @@
-﻿using BankSystemProject.Model;
+﻿using BankSystemProject.Data;
+using BankSystemProject.Model;
 using Driving_License_Management_DVLD_.Helpers;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,13 +14,16 @@ namespace BankSystemProject.Repositories.Service
     {
        // private readonly UserManager<Users> _userManager;
         private readonly IConfiguration _configuration;
-       // private readonly RoleManager<IdentityRole> roleManager;
+        private readonly Bank_DbContext _context;
+
+        // private readonly RoleManager<IdentityRole> roleManager;
 
 
-        public JWTService(IConfiguration configuration)
+        public JWTService(IConfiguration configuration, Bank_DbContext _context)
         {
             //_userManager = userManager;
             _configuration = configuration;
+            this._context = _context;
            // this.roleManager = roleManager;
         }
         //public async Task<string>AddRoleAsync(AddRoleModel model)
@@ -74,15 +79,71 @@ namespace BankSystemProject.Repositories.Service
         //    return new JwtSecurityTokenHandler().WriteToken(token);
         //}
 
+
+
+
+
+
+
+        /*public string GenerateJwtToken(Users user)
+        //{
+        //    var claims = new[]
+        //    {
+        //         new Claim(ClaimTypes.NameIdentifier, user.Id),
+        //         new Claim(ClaimTypes.Role, user.Role),
+        //         new Claim(ClaimTypes.Name, user.UserName),
+
+        //     };
+
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        //    var token = new JwtSecurityToken(
+        //        issuer: _configuration["Jwt:Issuer"],
+        //        audience: _configuration["Jwt:Audience"],
+        //        claims: claims,
+        //        expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireDurationInMinutes"])),
+        //        signingCredentials: creds);
+
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}*/
+
+
         public string GenerateJwtToken(Users user)
         {
-            var claims = new[]
+            // Common claims for both employees and customers
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id), // User's Id
+        new Claim(ClaimTypes.Name, user.UserName),      // User's Name
+        new Claim(ClaimTypes.Role, user.Role)          // User's Role (Employee or Customer)
+    };
+
+            // Add role-specific claims
+            if (user.Role == "Customer")
             {
-                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                 new Claim(ClaimTypes.Role, user.Role),
-                 new Claim(ClaimTypes.Name, user.UserName),
-       
-             };
+                var customerAccount = _context.CustomersAccounts
+                    .Where(c => c.UserId == user.Id)
+                    .FirstOrDefault();
+
+                if (customerAccount != null)
+                {
+                    claims.Add(new Claim("AccountNumber", customerAccount.AccountNumber));
+                    claims.Add(new Claim("AccountBalance", customerAccount.Balance.ToString())); // Optional
+                }
+            }
+            else if (user.Role == "Employee")
+            {
+                var employeeDetails = _context.Employee
+                    .Where(e => e.UserId == user.Id)
+                    .FirstOrDefault();
+
+                if (employeeDetails != null)
+                {
+                    claims.Add(new Claim("EmployeeId", employeeDetails.EmployeeId.ToString()));
+                  
+                }
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -92,10 +153,12 @@ namespace BankSystemProject.Repositories.Service
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireDurationInMinutes"])),
-                signingCredentials: creds);
+                signingCredentials: creds
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
     }
 }

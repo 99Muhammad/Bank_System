@@ -4,9 +4,11 @@ namespace BankSystemProject.Repositories.Interface
 {
     public interface ICustomerAccount
     {
-        Task<List<Res_CustomersAccounts>> GetCustomersAccountsInfoAsync();
-        Task<Res_UpdateAccTypeInCustomerAcc> UpdateAccTypeInCustomerAccByUserID(Req_UpdateAccTypeInCustomerAcc req_UpdateAccTypeIn,string UserID);
-        Task<Res_UpdateAccTypeInCustomerAcc> GetAccountTypeNameByUserID( string UserID);
+        Task<List<Res_CustomersAccounts>> GetCustomersAccountsInfoAsync(bool includeDeleted);
+        Task<Res_UpdateAccTypeInCustomerAcc> UpdateAccountInfo(Req_UpdateAccTypeInCustomerAcc req_UpdateAccTypeIn, int customerAccountID);
+        Task<Res_UpdateAccTypeInCustomerAcc> GetAccountTypeNameBycustomerAccountID( int customerAccountID);
         Task<Res_CustomersAccounts> GetAccountInfoByAccountNum(string AccountNum);
+        Task<bool> UpdateCustomerInfoAsync(Req_UpdateCustomerInfoDto updateInfo,int CustomerAccountID);
+        Task<bool> DeleteCustomerAccountAsync(int CustomerAccountID);
     }
 }

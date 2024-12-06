@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BankSystemProject.Migrations
 {
     /// <inheritdoc />
-    public partial class Updaterelationships : Migration
+    public partial class Updatetransaction : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -74,6 +74,20 @@ namespace BankSystemProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Branches",
+                columns: table => new
+                {
+                    BranchId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BranchName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BranchLocation = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Branches", x => x.BranchId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LoanTypes",
                 columns: table => new
                 {
@@ -81,7 +95,8 @@ namespace BankSystemProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     LoanTypeName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     InterestRate = table.Column<double>(type: "float", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LoanTermMonths = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -225,6 +240,27 @@ namespace BankSystemProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ATMMachines",
+                columns: table => new
+                {
+                    ATMMachineId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BranchId = table.Column<int>(type: "int", nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ATMStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ATMMachines", x => x.ATMMachineId);
+                    table.ForeignKey(
+                        name: "FK_ATMMachines_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "BranchId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Employee",
                 columns: table => new
                 {
@@ -232,7 +268,9 @@ namespace BankSystemProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     HireDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EmployeeSalary = table.Column<int>(type: "int", nullable: false)
+                    EmployeeSalary = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    BranchID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -242,6 +280,12 @@ namespace BankSystemProject.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Employee_Branches_BranchID",
+                        column: x => x.BranchID,
+                        principalTable: "Branches",
+                        principalColumn: "BranchId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -254,6 +298,7 @@ namespace BankSystemProject.Migrations
                     CustomerAccountId = table.Column<int>(type: "int", nullable: false),
                     CardType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreditLimit = table.Column<double>(type: "float", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -277,12 +322,23 @@ namespace BankSystemProject.Migrations
                 {
                     LoanApplicationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    ApplicantName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContactNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Income = table.Column<double>(type: "float", nullable: false),
+                    EmploymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BankAccountNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LoanAmount = table.Column<double>(type: "float", nullable: false),
+                    InterestRate = table.Column<double>(type: "float", nullable: false),
+                    LoanTermMonths = table.Column<int>(type: "int", nullable: false),
                     CustomerAccountId = table.Column<int>(type: "int", nullable: false),
                     LoanTypeId = table.Column<int>(type: "int", nullable: false),
-                    AmountRequested = table.Column<double>(type: "float", nullable: false),
                     ApplicationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApprovalDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    RepaymentSchedule = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsSecuredLoan = table.Column<bool>(type: "bit", nullable: false),
+                    CollateralDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ApplicationStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -295,36 +351,6 @@ namespace BankSystemProject.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_LoanApplications_LoanTypes_LoanTypeId",
-                        column: x => x.LoanTypeId,
-                        principalTable: "LoanTypes",
-                        principalColumn: "LoanTypeId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Loans",
-                columns: table => new
-                {
-                    LoanId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerAccountId = table.Column<int>(type: "int", nullable: false),
-                    LoanTypeId = table.Column<int>(type: "int", nullable: false),
-                    LoanAmount = table.Column<double>(type: "float", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Loans", x => x.LoanId);
-                    table.ForeignKey(
-                        name: "FK_Loans_CustomersAccounts_CustomerAccountId",
-                        column: x => x.CustomerAccountId,
-                        principalTable: "CustomersAccounts",
-                        principalColumn: "CustomerAccountId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Loans_LoanTypes_LoanTypeId",
                         column: x => x.LoanTypeId,
                         principalTable: "LoanTypes",
                         principalColumn: "LoanTypeId",
@@ -356,7 +382,8 @@ namespace BankSystemProject.Migrations
                 name: "Transactions",
                 columns: table => new
                 {
-                    TransactionId = table.Column<int>(type: "int", nullable: false),
+                    TransactionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerAccountId = table.Column<int>(type: "int", nullable: false),
                     TransactionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Amount = table.Column<double>(type: "float", nullable: false),
@@ -367,8 +394,8 @@ namespace BankSystemProject.Migrations
                 {
                     table.PrimaryKey("PK_Transactions", x => x.TransactionId);
                     table.ForeignKey(
-                        name: "FK_Transactions_CustomersAccounts_TransactionId",
-                        column: x => x.TransactionId,
+                        name: "FK_Transactions_CustomersAccounts_CustomerAccountId",
+                        column: x => x.CustomerAccountId,
                         principalTable: "CustomersAccounts",
                         principalColumn: "CustomerAccountId",
                         onDelete: ReferentialAction.Cascade);
@@ -401,30 +428,41 @@ namespace BankSystemProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Branches",
+                name: "Loans",
                 columns: table => new
                 {
-                    BranchId = table.Column<int>(type: "int", nullable: false)
+                    LoanId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    BranchName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BranchLocation = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ManagerId = table.Column<int>(type: "int", nullable: false),
-                    UsersId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    CustomerAccountId = table.Column<int>(type: "int", nullable: false),
+                    LoanTypeId = table.Column<int>(type: "int", nullable: false),
+                    LoanAmount = table.Column<double>(type: "float", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LoanApplicationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Branches", x => x.BranchId);
+                    table.PrimaryKey("PK_Loans", x => x.LoanId);
                     table.ForeignKey(
-                        name: "FK_Branches_AspNetUsers_UsersId",
-                        column: x => x.UsersId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        name: "FK_Loans_CustomersAccounts_CustomerAccountId",
+                        column: x => x.CustomerAccountId,
+                        principalTable: "CustomersAccounts",
+                        principalColumn: "CustomerAccountId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Branches_Employee_ManagerId",
-                        column: x => x.ManagerId,
-                        principalTable: "Employee",
-                        principalColumn: "EmployeeId",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Loans_LoanApplications_LoanApplicationId",
+                        column: x => x.LoanApplicationId,
+                        principalTable: "LoanApplications",
+                        principalColumn: "LoanApplicationId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Loans_LoanTypes_LoanTypeId",
+                        column: x => x.LoanTypeId,
+                        principalTable: "LoanTypes",
+                        principalColumn: "LoanTypeId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -449,27 +487,6 @@ namespace BankSystemProject.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "ATMMachines",
-                columns: table => new
-                {
-                    ATMMachineId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    BranchId = table.Column<int>(type: "int", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ATMStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ATMMachines", x => x.ATMMachineId);
-                    table.ForeignKey(
-                        name: "FK_ATMMachines_Branches_BranchId",
-                        column: x => x.BranchId,
-                        principalTable: "Branches",
-                        principalColumn: "BranchId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.InsertData(
                 table: "AccountTypes",
                 columns: new[] { "AccountTypeId", "AccountTypeName", "Description" },
@@ -480,6 +497,17 @@ namespace BankSystemProject.Migrations
                     { 3, "Fixed Deposit", "A long-term deposit account with a fixed term and higher interest rate." },
                     { 4, "Business Account", "A checking or savings account tailored for businesses and organizations." },
                     { 5, "Salary Account", "A checking account used for receiving employee salaries directly from employers." }
+                });
+
+            migrationBuilder.InsertData(
+                table: "LoanTypes",
+                columns: new[] { "LoanTypeId", "Description", "InterestRate", "LoanTermMonths", "LoanTypeName" },
+                values: new object[,]
+                {
+                    { 1, "A personal loan with a fixed interest rate.", 5.5, 60, "Personal Loan" },
+                    { 2, "A loan to purchase a home with lower interest rates.", 3.7999999999999998, 360, "Home Loan" },
+                    { 3, "A loan to purchase a vehicle with medium interest rates.", 4.2000000000000002, 72, "Auto Loan" },
+                    { 4, "A loan to support higher education costs with subsidized interest rates.", 3.0, 120, "Student Loan" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -527,16 +555,6 @@ namespace BankSystemProject.Migrations
                 column: "BranchId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Branches_ManagerId",
-                table: "Branches",
-                column: "ManagerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Branches_UsersId",
-                table: "Branches",
-                column: "UsersId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_CreditCards_CustomerAccountId",
                 table: "CreditCards",
                 column: "CustomerAccountId");
@@ -550,6 +568,11 @@ namespace BankSystemProject.Migrations
                 name: "IX_CustomersAccounts_UserId",
                 table: "CustomersAccounts",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employee_BranchID",
+                table: "Employee",
+                column: "BranchID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employee_UserId",
@@ -577,6 +600,12 @@ namespace BankSystemProject.Migrations
                 column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Loans_LoanApplicationId",
+                table: "Loans",
+                column: "LoanApplicationId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Loans_LoanTypeId",
                 table: "Loans",
                 column: "LoanTypeId");
@@ -585,6 +614,11 @@ namespace BankSystemProject.Migrations
                 name: "IX_TrackingLoggedInUsers_CustomerAccountID",
                 table: "TrackingLoggedInUsers",
                 column: "CustomerAccountID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_CustomerAccountId",
+                table: "Transactions",
+                column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransferInfo_CustomerAccountID",
@@ -617,7 +651,7 @@ namespace BankSystemProject.Migrations
                 name: "CreditCards");
 
             migrationBuilder.DropTable(
-                name: "LoanApplications");
+                name: "Employee");
 
             migrationBuilder.DropTable(
                 name: "LoanRepayments");
@@ -641,7 +675,7 @@ namespace BankSystemProject.Migrations
                 name: "Loans");
 
             migrationBuilder.DropTable(
-                name: "Employee");
+                name: "LoanApplications");
 
             migrationBuilder.DropTable(
                 name: "CustomersAccounts");

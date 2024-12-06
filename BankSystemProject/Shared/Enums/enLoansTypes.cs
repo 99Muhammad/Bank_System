@@ -5,12 +5,12 @@ namespace BankSystemProject.Shared.Enums
   public enum enLoansTypes
     {
         [EnumMember(Value = "Personal Loan")]
-        PersonalLoan,
+        PersonalLoan=1,
         [EnumMember(Value = " Home Loan")]
-        HomeLoan,
+        HomeLoan=2,
         [EnumMember(Value = "Auto Loan")]
-        AutoLoan,
+        AutoLoan=3,
         [EnumMember(Value = "Student Loan")]
-        StudentLoan
+        StudentLoan=4
     }
 }

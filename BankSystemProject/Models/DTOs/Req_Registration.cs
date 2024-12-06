@@ -38,9 +38,9 @@ namespace BankSystemProject.Models.DTOs
         [StringLength(100, MinimumLength = 8, ErrorMessage = "Password should be at least 8 characters long.")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "PIN Code is required.")]
-        [RegularExpression(@"^\d{4,6}$", ErrorMessage = "PIN Code must be a numeric value consisting of 4 to 6 digits.")]
-        public string PinCode { get; set; }
+        //[Required(ErrorMessage = "PIN Code is required.")]
+        //[RegularExpression(@"^\d{4,6}$", ErrorMessage = "PIN Code must be a numeric value consisting of 4 to 6 digits.")]
+        //public string PinCode { get; set; }
 
 
         [Required(ErrorMessage = "Date of birth is required.")]

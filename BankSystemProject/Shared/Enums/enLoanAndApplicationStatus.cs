@@ -2,7 +2,7 @@
 
 namespace BankSystemProject.Shared.Enums
 {
-    public enum enApplicationStatus
+    public enum enLoanAndApplicationStatus
     {
      
         [EnumMember(Value = "Pending")]

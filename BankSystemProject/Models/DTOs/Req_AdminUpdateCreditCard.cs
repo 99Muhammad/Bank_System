@@ -20,8 +20,9 @@ namespace BankSystemProject.Models.DTOs
         [Required]
         public enCreditCardStatus Status { get; set; }
 
-        [Required(ErrorMessage = "PIN Code is required.")]
-        [RegularExpression(@"^\d{4,6}$", ErrorMessage = "PIN Code must be a numeric value consisting of 4 to 6 digits.")]
-        public string PinCode { get; set; }
+        public bool IsDeleted { get; set; }
+        //[Required(ErrorMessage = "PIN Code is required.")]
+        //[RegularExpression(@"^\d{4,6}$", ErrorMessage = "PIN Code must be a numeric value consisting of 4 to 6 digits.")]
+        //public string PinCode { get; set; }
     }
 }

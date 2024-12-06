@@ -1,4 +1,5 @@
 ﻿using BankSystemProject.Data;
+using BankSystemProject.Helpers;
 using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
@@ -23,19 +24,30 @@ namespace BankSystemProject.Repositories.Service
             {
                 //var account = await _context.CustomersAccounts.FindAsync(transactionDto.UserName);
 
-                var transactioninfo = await _context.Transactions.Include(u => u.customerAccount)
-                    .FirstOrDefaultAsync(u => u.customerAccount.AccountNumber == transactionDto.AccountNumber);
+                var transactioninfo = await _context.CustomersAccounts.
+                    Include(u => u.CreditCards)
+                    //.ThenInclude(c=>c.CreditCards)
+                    .FirstOrDefaultAsync(u => u.AccountNumber 
+                    == Base64Helper.Encode(transactionDto.AccountNumber) );
 
-                if (transactioninfo == null || (transactionDto.transactionType == enTransactionType.Withdraw && transactioninfo.customerAccount.Balance < transactionDto.transactionAmount))
+                if (transactioninfo == null || (transactionDto.transactionType 
+                    == enTransactionType.Withdraw && transactioninfo.Balance < transactionDto.transactionAmount))
                     return false;
 
-                transactioninfo.customerAccount.Balance += (transactionDto.transactionType == enTransactionType.Withdraw ? -transactionDto.transactionAmount : transactionDto.transactionAmount);
 
-                await _context.CustomersAccounts.AddAsync(transactioninfo.customerAccount);
+               var creditCard= transactioninfo.CreditCards
+                .FirstOrDefault(c => c.PinCode == Base64Helper.Encode(transactionDto.PinCode)); 
+                   
+                if(creditCard== null) return false;
 
+
+               transactioninfo.Balance += (transactionDto.transactionType == enTransactionType.Withdraw ? -transactionDto.transactionAmount : transactionDto.transactionAmount);
+
+                //await _context.CustomersAccounts.AddAsync(transactioninfo);
+                _context.CustomersAccounts.Update(transactioninfo);
                 var newTransaction = new TransactionsDepWi
                 {
-                    CustomerAccountId = transactioninfo.customerAccount.CustomerAccountId,
+                    CustomerAccountId = transactioninfo.CustomerAccountId,
                     TransactionType = transactionDto.transactionType.ToString(),
                     Amount = transactionDto.transactionAmount,
                     TransactionDate = DateTime.UtcNow,
@@ -44,12 +56,12 @@ namespace BankSystemProject.Repositories.Service
                 await _context.Transactions.AddAsync(newTransaction);
                 await _context.SaveChangesAsync();
 
-                if (transactionDto.transactionType.ToString() == "Deposit")
+                if (transactionDto.transactionType.ToString() == enTransactionType.Deposit.ToString())
                 {
                     var transactionRecord = new Res_ImplementTransactionDto
                     {
                         Message = "Deposit successful! Your new balance is $" +
-                        transactioninfo.customerAccount.Balance,
+                        transactioninfo.Balance,
                         Amount = transactionDto.transactionAmount,
                         //Fee = transactioninfo.customerAccount,
 
@@ -61,7 +73,7 @@ namespace BankSystemProject.Repositories.Service
                     var transactionRecord = new Res_ImplementTransactionDto
                     {
                         Message = "Withdrwal successful! Your new balance is $" +
-                                            transactioninfo.customerAccount.Balance,
+                                            transactioninfo.Balance,
                         Amount = transactionDto.transactionAmount,
 
                         //Fee = transactioninfo.customerAccount.BankFee,

@@ -27,7 +27,7 @@ namespace BankSystemProject.Controllers.AdminControllers
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync(Req_Login loginDto)
+        public async Task<IActionResult> LoginAsync([FromForm]Req_Login loginDto)
         {
 
             var loginResult = await _IAccount.LoginAsync(loginDto);
@@ -62,7 +62,6 @@ namespace BankSystemProject.Controllers.AdminControllers
             return Ok(new
             {
                 message = "Registration successful! , please check your email to Confirm Email ",
-                // userId = result.userId,
                 accountNumber = result.AccountNmber
             });
         }

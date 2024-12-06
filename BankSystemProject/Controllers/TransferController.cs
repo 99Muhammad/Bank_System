@@ -1,5 +1,7 @@
 ﻿using BankSystemProject.Model;
+using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
+using BankSystemProject.Repositories.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,22 +37,25 @@ namespace BankSystemProject.Controllers
             return Ok(transfer);
         }
 
-        // POST: api/TransferInfo
-        [HttpPost]
-        public async Task<IActionResult> CreateTransfer([FromBody] TransferInfo transferInfo)
+        [HttpPost("transfer")]
+        public async Task<IActionResult> CreateTransferAsync([FromBody] Req_TransferInfoDto transferInfoDto)
         {
             try
             {
-                await _transferInfoService.CreateTransferAsync(transferInfo);
-                return CreatedAtAction(nameof(GetTransferById), new { id = transferInfo.TransferInfoId }, transferInfo);
+                await _transferInfoService.CreateTransferAsync(transferInfoDto);
+                return Ok("Transfer successful.");
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message); // Return invalid account error
+                return BadRequest(ex.Message);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message); // Return insufficient funds error
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
     }
