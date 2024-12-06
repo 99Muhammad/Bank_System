@@ -1,6 +1,8 @@
 ﻿using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Service;
+using BankSystemProject.Repositories.Service.AdminServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,10 +20,11 @@ namespace BankSystemProject.Controllers
             this._IcustomerAccount = _IcustomerAccount;
         }
 
-        [HttpGet]
+        //[Authorize(Roles ="Employee")]
+        [HttpGet("GetAllCustomersAccounts")]
         public async Task<IActionResult> GetCustomerAccounts()
         {
-            var accounts = await _IcustomerAccount.GetCustomersAccountsInfoAsync();
+            var accounts = await _IcustomerAccount.GetCustomersAccountsInfoAsync(false);
             if (!accounts.Any())
             {
                 return NotFound("No customer accounts found.");
@@ -29,12 +32,25 @@ namespace BankSystemProject.Controllers
             return Ok(accounts);
         }
 
-        [HttpPut("UpdateAccTypeNameInCustomerAccByUserID/{UserID}")]
-        public async Task<IActionResult> UpdateAccTypeNameInCustomerAccByUserID([FromForm] Req_UpdateAccTypeInCustomerAcc req_UpdateAccTypeIn,string UserID)
+        //[Authorize(Roles ="Employee")]
+        [HttpGet("GetAllDeletedCustomersAccounts")]
+        public async Task<IActionResult> GetAllDeletedCustomersAccounts()
+        {
+            var accounts = await _IcustomerAccount.GetCustomersAccountsInfoAsync(true);
+            if (!accounts.Any())
+            {
+                return NotFound("No customer accounts found.");
+            }
+            return Ok(accounts);
+        }
+
+
+        [HttpPut("UpdateAccountInfo/{customerAccountID}")]
+        public async Task<IActionResult> UpdateAccountInfo([FromForm] Req_UpdateAccTypeInCustomerAcc req_UpdateAccTypeIn,int customerAccountID)
         {
             try
             {
-                var response = await _IcustomerAccount.UpdateAccTypeInCustomerAccByUserID(req_UpdateAccTypeIn,UserID);
+                var response = await _IcustomerAccount.UpdateAccountInfo(req_UpdateAccTypeIn,customerAccountID);
                 return Ok(response);
             }
             catch (KeyNotFoundException ex)
@@ -47,12 +63,12 @@ namespace BankSystemProject.Controllers
             }
         }
 
-        [HttpGet("GetAccountTypeNameByUserID/{UserID}")]
-        public async Task<IActionResult> GetAccountTypeNameByUserID( string UserID)
+        [HttpGet("GetAccountTypeNameByCustomerAccountID/{customerAccountID}")]
+        public async Task<IActionResult> GetAccountTypeNameByCustomerAccountID( int customerAccountID)
         {
             try
             {
-                var response = await _IcustomerAccount.GetAccountTypeNameByUserID( UserID);
+                var response = await _IcustomerAccount.GetAccountTypeNameBycustomerAccountID( customerAccountID);
                 return Ok(response);
             }
             catch (KeyNotFoundException ex)
@@ -65,24 +81,103 @@ namespace BankSystemProject.Controllers
             }
         }
 
-        [HttpGet("account-infoByAccountNumber")]
+        [HttpGet("GetAccountInfoByAccountNumber")]
         //[Authorize]
         public async Task<IActionResult> GetAccountInfo(string accountNumber)
         {
+            if (string.IsNullOrWhiteSpace(accountNumber))
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Account number cannot be null or empty."
+                });
+            }
+
             try
             {
                 var accountInfo = await _IcustomerAccount.GetAccountInfoByAccountNum(accountNumber);
-                return Ok(accountInfo);
+
+                if (accountInfo == null)
+                {
+                    return NotFound(new
+                    {
+                        Success = false,
+                        Message = "No account information found for the given account number."
+                    });
+                }
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Account information retrieved successfully.",
+                    Data = accountInfo
+                });
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new
+                {
+                    Success = false,
+                    Message = ex.Message
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while processing your request.");
+                // Log the exception here using a logging framework like Serilog, NLog, etc.
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "An internal server error occurred. Please try again later.",
+                    Details = ex.Message // Remove this in production for security reasons.
+                });
             }
         }
 
+        [HttpPut("UpdateCustomerInfo/{customerAccountID}")]
+        public async Task<IActionResult> UpdateCustomerInfo([FromForm] Req_UpdateCustomerInfoDto request, int customerAccountID)
+        {
+            try
+            {
+                var result = await _IcustomerAccount.UpdateCustomerInfoAsync(request, customerAccountID);
+                if (result)
+                {
+                    return Ok(new { Message = "User information updated successfully." });
+                }
+
+                return BadRequest(new { Message = "Failed to update user information." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while updating user information.", Details = ex.Message });
+            }
+        }
+
+        [HttpDelete("DeleteCustomerAccount/{customerAccountID}")]
+        public async Task<IActionResult> DeleteCustomerAccount(int customerAccountID)
+        {
+            try
+            {
+                var result = await _IcustomerAccount.DeleteCustomerAccountAsync(customerAccountID);
+                if (result)
+                {
+                    return Ok(new { Message = "Customer account deleted successfully." });
+                }
+
+                return BadRequest(new { Message = "Failed to delete customer account." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while deleting the customer account.", Details = ex.Message });
+            }
+        }
     }
 }

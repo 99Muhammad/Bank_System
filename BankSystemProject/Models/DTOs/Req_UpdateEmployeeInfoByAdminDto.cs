@@ -11,7 +11,8 @@ namespace BankSystemProject.Models.DTOs
         public enUserRole UserRole { get; set; }
 
         // Conditionally show Salary field for employees only
-        [SalaryValidation(ErrorMessage = "Salary is required for employees.")]
+        //[SalaryValidation(ErrorMessage = "Salary is required for employees.")]
+        [Required]
         public int? Salary { get; set; }
         public enBranches BrnachName { get; set; }
         //public string  BranchName { get; set; }

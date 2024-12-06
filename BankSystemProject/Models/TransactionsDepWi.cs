@@ -1,8 +1,10 @@
-﻿namespace BankSystemProject.Model
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BankSystemProject.Model
 {
     public class TransactionsDepWi
     {
-
+        [Key]
         public int TransactionId { get; set; }
         public int CustomerAccountId { get; set; }
         public string TransactionType { get; set; }

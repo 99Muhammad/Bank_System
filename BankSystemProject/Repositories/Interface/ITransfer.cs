@@ -1,4 +1,5 @@
 ﻿using BankSystemProject.Model;
+using BankSystemProject.Models.DTOs;
 
 namespace BankSystemProject.Repositories.Interface
 {
@@ -6,6 +7,6 @@ namespace BankSystemProject.Repositories.Interface
     {
         Task<List<TransferInfo>> GetAllTransfersAsync();
         Task<TransferInfo> GetTransferByIdAsync(int id);
-        Task CreateTransferAsync(TransferInfo transferInfo);
+        Task CreateTransferAsync(Req_TransferInfoDto transferInfoDto);
     }
 }

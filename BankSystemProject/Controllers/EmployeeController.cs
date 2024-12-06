@@ -17,10 +17,22 @@ namespace BankSystemProject.Controllers
         }
 
         //for specific Employee Role
+        [HttpGet("GetDeletedEmployeeInfoByUsername/{username}")]
+        public async Task<IActionResult> GetDeletedEmployeeInfoByUsername(string username)
+        {
+            var employeeInfo = await _IEmployee.GetEmployeeInfoByUsernameAsync(username,true);
+
+            if (employeeInfo == null)
+            {
+                return NotFound(new { Message = "Employee not found." });
+            }
+
+            return Ok(employeeInfo);
+        }
         [HttpGet("GetEmployeeInfo/{username}")]
         public async Task<IActionResult> GetEmployeeInfoByUsername(string username)
         {
-            var employeeInfo = await _IEmployee.GetEmployeeInfoByUsernameAsync(username);
+            var employeeInfo = await _IEmployee.GetEmployeeInfoByUsernameAsync(username, false);
 
             if (employeeInfo == null)
             {
@@ -31,10 +43,10 @@ namespace BankSystemProject.Controllers
         }
 
         //for specific Employee Role
-        [HttpPut("UpdateEmployeeByUserNameInfo/{username}")]
-        public async Task<IActionResult> UpdateEmployeeByUserNameInfo(string UserID, [FromForm] Req_UpdateEmployeeInfoDto updateDto)
+        [HttpPut("UpdateEmployeeByUserNameInfo/{UserName}")]
+        public async Task<IActionResult> UpdateEmployeeByUserNameInfo(string UserName, [FromForm] Req_UpdateEmployeeInfoDto updateDto)
         {
-            var isUpdated = await _IEmployee.UpdateEmployeeInfoByUserNameAsync(UserID, updateDto);
+            var isUpdated = await _IEmployee.UpdateEmployeeInfoByUserNameAsync(UserName, updateDto);
 
             if (!isUpdated)
             {
@@ -57,10 +69,10 @@ namespace BankSystemProject.Controllers
         }
 
         //for Employee Admin
-        [HttpPut("UpdateEmployeeByIDInfo/{UserID}")]
-        public async Task<IActionResult> UpdateEmployeeByIDInfo(string UserID, [FromForm] Req_UpdateEmployeeInfoDto updateDto)
+        [HttpPut("UpdateEmployeeByIDInfo/{EmployeeID}")]
+        public async Task<IActionResult> UpdateEmployeeByIDInfo(int EmployeeID, [FromForm] Req_UpdateEmployeeInfoByAdminDto updateDto)
         {
-            var isUpdated = await _IEmployee.UpdateEmployeeInfoByUserNameAsync(UserID, updateDto);
+            var isUpdated = await _IEmployee.UpdateEmployeeInfoByIDAsync(EmployeeID, updateDto);
 
             if (!isUpdated)
             {

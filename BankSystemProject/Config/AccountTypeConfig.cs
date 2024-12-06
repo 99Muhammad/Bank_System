@@ -26,7 +26,7 @@ namespace BankSystemProject.Config
               // new enAccountType { AccountTypeId = 6, AccountTypeName = "Student Account", Description = "A low-maintenance account for students with minimal fees and limited features." },
               // new enAccountType { AccountTypeId = 7, AccountTypeName = "Joint Account", Description = "An account shared between multiple account holders, often for family purposes." },
               new AccountType { AccountTypeId = 5, AccountTypeName = "Salary Account", Description = "A checking account used for receiving employee salaries directly from employers." });
-              //new enAccountType { AccountTypeId = 9, AccountTypeName = "Loan Account", Description = "A dedicated account for loan disbursement and repayment tracking." },
+              //new enAccountType { AccountTypeId = 9, AccountTypeName = "loan Account", Description = "A dedicated account for loan disbursement and repayment tracking." },
               //new enAccountType { AccountTypeId = 10, AccountTypeName = "Credit Card Account", Description = "An account to manage credit card usage and repayments." },
               //new enAccountType { AccountTypeId = 11, AccountTypeName = "Investment Account", Description = "An account used for stock, mutual funds, or other investment activities." },
               //new enAccountType { AccountTypeId = 12, AccountTypeName = "Non-Resident Account", Description = "Accounts designed for non-resident individuals to manage funds in their home country." },

@@ -14,7 +14,7 @@ namespace BankSystemProject.Config
                    .WithMany(l => l.LoanApplications)
                    .HasForeignKey(la => la.LoanTypeId);
 
-            builder.HasOne(la => la.CustomerAccount)
+            builder.HasOne(la => la.CustomersAccounts)
                    .WithMany(ca => ca.LoanApplications)
                    .HasForeignKey(la => la.CustomerAccountId);
 

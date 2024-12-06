@@ -137,7 +137,7 @@ namespace BankSystemProject.Repositories.Service
             if (!validationResult.Success)
                 return validationResult;
 
-            // Create the user
+            // SubmitLoanApplicationAsync the user
             var userInfo = CreateUserInfo(registerDto);
 
             var result = await _userManager.CreateAsync(userInfo, registerDto.Password);

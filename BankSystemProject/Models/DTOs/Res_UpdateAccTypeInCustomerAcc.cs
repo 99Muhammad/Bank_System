@@ -7,7 +7,9 @@ namespace BankSystemProject.Models.DTOs
     {
         public string FullName { get; set; }
         public string  AccountTypeName { get; set; }
-        public Users user { get; set; }
-        public AccountType accountType { get; set;}
+        public string Message { get; set; }
+        public string AccountNumber { get; set; }
+        //public Users user { get; set; }
+        //public AccountType accountType { get; set;}
     }
 }

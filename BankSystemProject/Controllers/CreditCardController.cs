@@ -2,8 +2,10 @@
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BankSystemProject.Controllers
 {
@@ -18,10 +20,14 @@ namespace BankSystemProject.Controllers
                 this._ICreditCard = _ICreditCard;
             }
 
-            [HttpPost("/CreateCreditCard")]
-            public async Task<IActionResult> CreateCreditCard([FromForm] Req_CreditCardDto creditCard)
+        [HttpPost("/CreateCreditCard")]
+        //[Authorize(Roles ="Employee")]
+        public async Task<IActionResult> CreateCreditCard([FromForm] Req_CreditCardDto creditCard)
             {
-                if (creditCard == null)
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get UserId from the JWT token
+
+            if (creditCard == null)
                 {  
                     return BadRequest("Credit card information is required.");
                 }
@@ -31,16 +37,17 @@ namespace BankSystemProject.Controllers
                     return BadRequest("Invalid card data.");
                 }
 
-                var result = await _ICreditCard.CreateCreditCardAsync(creditCard);
+                var result = await _ICreditCard.CreateCreditCardAsync(creditCard,userId);
 
             if (result)
             {
                 return CreatedAtAction(nameof(CreateCreditCard), new { message = "Credit Card Created Successfully", creditCard });
             }
-
+           
                 return StatusCode(500, "Internal server error while creating credit card.");
             }
 
+        //[Authorize(Roles ="Customer")]
         [HttpPut("/UpdateCreditCard/{creditCardId}")]
         public async Task<IActionResult> UpdateCreditCard(int creditCardId, [FromForm] Req_UserUpdateCreditCardDto updateCardDto)
         {
@@ -59,7 +66,7 @@ namespace BankSystemProject.Controllers
             return Ok(new { message = "Credit card updated successfully." });
         }
 
-
+        //[Authorize(Roles ="Employee")]
         [HttpPut("/UpdateCreditCardByAdmin/{creditCardId}")]
         public async Task<IActionResult> UpdateCreditCardByAdminAsync(int creditCardId, [FromForm] Req_AdminUpdateCreditCard updateCardDto)
         {
@@ -78,10 +85,11 @@ namespace BankSystemProject.Controllers
             return Ok(new { message = "Credit card updated successfully." });
         }
 
+        //[Authorize(Roles ="Employee")]
         [HttpGet("GetAllCardsInfo")]
         public async Task<IActionResult> GetAllCardsInfo()
         {
-            var cards = await _ICreditCard.GetAllCardsAsync();
+            var cards = await _ICreditCard.GetAllCardsAsync(false);
 
             if (cards == null || !cards.Any())
             {
@@ -91,6 +99,21 @@ namespace BankSystemProject.Controllers
             return Ok(cards);
         }
 
+        //[Authorize(Roles ="Employee")]
+        [HttpGet("GetAllDeletedCardsInfo")]
+        public async Task<IActionResult> GetAllDeletedCardsInfo()
+        {
+            var cards = await _ICreditCard.GetAllCardsAsync(true);
+
+            if (cards == null || !cards.Any())
+            {
+                return NotFound("No credit cards found.");
+            }
+
+            return Ok(cards);
+        }
+
+        //[Authorize(Roles ="Customer")]
         [HttpGet("GetCreditCardById/{creditCardID}")]
         public async Task<IActionResult> GetCreditCardById(int creditCardID)
         {
@@ -104,6 +127,7 @@ namespace BankSystemProject.Controllers
             return Ok(creditCard);
         }
 
+        //[Authorize(Roles ="Employee")]
         [HttpDelete("DeleteCreditCard/{creditCardID}")]
         public async Task<IActionResult> DeleteCreditCard(int creditCardID)
         {

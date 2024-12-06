@@ -13,6 +13,7 @@
         public string AccountTypeName { get; set; }
         public double Balance { get; set; }
         public DateTime CreatedDate { get; set; }
+        public string AccountNumber { get; set; }
 
 
     }

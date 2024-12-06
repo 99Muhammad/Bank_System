@@ -20,7 +20,7 @@ namespace BankSystemProject.Config
 
             builder.HasMany(t => t.transactions)
                 .WithOne(t => t.customerAccount)
-                .HasForeignKey(c => c.TransactionId);
+                .HasForeignKey(c => c.CustomerAccountId);
 
             //builder.Property(ca => ca.UserName)
             //       .HasMaxLength(50)
