@@ -12,6 +12,7 @@
         public double BalanceFromAfterTransfer { get; set; }
         public double BalanceToAfterTransfer { get; set; }
         public CustomerAccount customerAccount { get; set; }           // Navigation property to Users
+        
     }
 
 }
