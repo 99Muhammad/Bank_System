@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BankSystemProject.Repositories.Service
@@ -129,7 +130,7 @@ namespace BankSystemProject.Repositories.Service
                 if (customerAccount != null)
                 {
                     claims.Add(new Claim("AccountNumber", customerAccount.AccountNumber));
-                    claims.Add(new Claim("AccountBalance", customerAccount.Balance.ToString())); // Optional
+                   // claims.Add(new Claim("AccountBalance", customerAccount.Balance.ToString())); // Optional
                 }
             }
             else if (user.Role == "Employee")
@@ -159,6 +160,14 @@ namespace BankSystemProject.Repositories.Service
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+            }
+            return Convert.ToBase64String(randomNumber);
+        }
     }
 }

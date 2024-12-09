@@ -2,6 +2,7 @@
 using BankSystemProject.Data;
 using BankSystemProject.Helpers;
 using BankSystemProject.Model;
+using BankSystemProject.Models;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Shared.Enums;
@@ -35,21 +36,144 @@ namespace BankSystemProject.Repositories.Service
             this._jwtService = _jwtService;
 
         }
-        public async Task<string> LoginAsync(Req_Login loginDto)
+        //public async Task<string> LoginAsync(Req_Login loginDto)
+        //{
+        //    var user = await _userManager.FindByNameAsync(loginDto.UserName); 
+        //    if (user == null)
+        //    {
+        //        return null; 
+        //    }
+        //    if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
+        //    {
+        //        return null; 
+        //    }
+
+        //    var jwtToken = _jwtService.GenerateJwtToken(user); 
+
+        //    return jwtToken;
+        //}
+
+        public async Task<Res_TokenDto> LoginAsync(Req_Login loginDto)
         {
-            var user = await _userManager.FindByNameAsync(loginDto.UserName); 
+            var user = await _userManager.FindByNameAsync(loginDto.UserName);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            {
+                return null;
+            }
+
+            // Generate Access and Refresh Tokens
+            var accessToken = _jwtService.GenerateJwtToken(user);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            // Save the Refresh Token to the database
+            await SaveRefreshTokenAsync(user.Id, refreshToken);
+
+            return new Res_TokenDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
+        }
+
+
+        public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
+        {
+            // Validate the user details
+            var validationResult = await ValidateUserAsync(registerDto);
+            if (!validationResult.Success)
+                return validationResult;
+
+            // Create the user
+            var userInfo = CreateUserInfo(registerDto);
+            var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
+            if (!result.Succeeded)
+            {
+                return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
+            }
+
+            // Assign role
+            var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
+            if (!roleResult.Succeeded)
+            {
+                return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
+            }
+
+            // Handle role-specific logic
+            Res_Registration accountCreationResult = new Res_Registration();
+            if (registerDto.UserRole == enUserRole.Customer)
+            {
+                accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
+                if (!accountCreationResult.Success)
+                    return accountCreationResult;
+            }
+            else
+            {
+                await HandleEmployeeAsync(userInfo.Id, registerDto);
+            }
+
+            // Generate Refresh Token for the new user
+            var refreshToken = _jwtService.GenerateRefreshToken();
+            await SaveRefreshTokenAsync(userInfo.Id, refreshToken);
+
+            return new Res_Registration
+            {
+                UserName = registerDto.UserName,
+                AccountNmber = registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
+                Success = true
+            };
+        }
+
+        private async Task SaveRefreshTokenAsync(string userId, string refreshToken)
+        {
+            var existingToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userId);
+            if (existingToken != null)
+            {
+                existingToken.Token = refreshToken;
+                existingToken.ExpiryDate = DateTime.UtcNow.AddDays(7); // Set expiry for 7 days
+            }
+            else
+            {
+                var newToken = new RefreshToken
+                {
+                    UserId = userId,
+                    Token = refreshToken,
+                    ExpiryDate = DateTime.UtcNow.AddDays(7) // Set expiry for 7 days
+                };
+                _context.RefreshTokens.Add(newToken);
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Res_TokenDto> RefreshTokensAsync(string refreshToken)
+        {
+            var storedToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+            if (storedToken == null || storedToken.ExpiryDate <= DateTime.UtcNow)
+            {
+                return null; // Invalid or expired token
+            }
+
+            var user = await _userManager.FindByIdAsync(storedToken.UserId);
             if (user == null)
             {
-                return null; 
+                return null; // User not found
             }
-            if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
+
+            // Generate new tokens
+            var newAccessToken = _jwtService.GenerateJwtToken(user);
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            // Update the refresh token in the database
+            storedToken.Token = newRefreshToken;
+            storedToken.ExpiryDate = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            return new Res_TokenDto
             {
-                return null; 
-            }
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                RefreshTokenExpiry= storedToken.ExpiryDate,
 
-            var jwtToken = _jwtService.GenerateJwtToken(user); 
-
-            return jwtToken;
+            };
         }
 
         private async Task<Res_Registration> ValidateUserAsync(Req_Registration registerDto)
@@ -130,48 +254,48 @@ namespace BankSystemProject.Repositories.Service
             _context.Employee.Add(newEmployee);
             await _context.SaveChangesAsync();
         }
-        public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
-        {
-            // Validate the user details
-            var validationResult = await ValidateUserAsync(registerDto);
-            if (!validationResult.Success)
-                return validationResult;
+        //public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
+        //{
+        //    // Validate the user details
+        //    var validationResult = await ValidateUserAsync(registerDto);
+        //    if (!validationResult.Success)
+        //        return validationResult;
 
-            // SubmitLoanApplicationAsync the user
-            var userInfo = CreateUserInfo(registerDto);
+        //    // SubmitLoanApplicationAsync the user
+        //    var userInfo = CreateUserInfo(registerDto);
 
-            var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
-            if (!result.Succeeded)
-            {
-                return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
-            }
+        //    var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
+        //    if (!result.Succeeded)
+        //    {
+        //        return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
+        //    }
 
-            // Assign role
-            var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
-            if (!roleResult.Succeeded)
-            {
-                return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
-            }
-            var accountCreationResult=new Res_Registration() ;
-            // Handle role-specific logic
-            if (registerDto.UserRole == enUserRole.Customer)
-            {
-                 accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
-                if (!accountCreationResult.Success)
-                    return accountCreationResult;
-            }
-            else
-            {
-                await HandleEmployeeAsync(userInfo.Id, registerDto);
-            }
+        //    // Assign role
+        //    var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
+        //    if (!roleResult.Succeeded)
+        //    {
+        //        return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
+        //    }
+        //    var accountCreationResult=new Res_Registration() ;
+        //    // Handle role-specific logic
+        //    if (registerDto.UserRole == enUserRole.Customer)
+        //    {
+        //         accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
+        //        if (!accountCreationResult.Success)
+        //            return accountCreationResult;
+        //    }
+        //    else
+        //    {
+        //        await HandleEmployeeAsync(userInfo.Id, registerDto);
+        //    }
 
-            return new Res_Registration
-            {
-                UserName = registerDto.UserName,
-                AccountNmber = registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
-                Success = true
-            };
-        }
+        //    return new Res_Registration
+        //    {
+        //        UserName = registerDto.UserName,
+        //        AccountNmber = registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
+        //        Success = true
+        //    };
+        //}
         private async Task<string> GenerateUniqueAccountNumAsync()
         {
             Random random = new Random();
