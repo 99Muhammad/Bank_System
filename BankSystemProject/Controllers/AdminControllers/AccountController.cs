@@ -57,8 +57,6 @@ namespace BankSystemProject.Controllers.AdminControllers
             if (result.UserName == null)
                 return BadRequest(result.Message);
 
-
-
             return Ok(new
             {
                 message = "Registration successful! , please check your email to Confirm Email ",
@@ -66,7 +64,16 @@ namespace BankSystemProject.Controllers.AdminControllers
             });
         }
 
-       
+        [HttpPost("RefreshToken")]
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        {
+            var tokens = await _IAccount.RefreshTokensAsync(refreshToken);
+            if (tokens == null)
+            {
+                return Unauthorized("Invalid or expired refresh token.");
+            }
+            return Ok(tokens);
+        }
 
     }
 }

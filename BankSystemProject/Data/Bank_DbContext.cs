@@ -1,4 +1,5 @@
 ﻿using BankSystemProject.Model;
+using BankSystemProject.Models;
 using Mailjet.Client.Resources;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -40,5 +41,7 @@ namespace BankSystemProject.Data
         public DbSet<TransferInfo> TransferInfo { get; set; }
         public DbSet<LoanType> LoanTypes { get; set; }
         public DbSet<Employee> Employee { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
     }
 }
