@@ -10,5 +10,6 @@
         public Users User { get; set; }
         public int BranchID { get; set; }
         public Branch BranchEmployee { get; set; }
+      
     }
 }

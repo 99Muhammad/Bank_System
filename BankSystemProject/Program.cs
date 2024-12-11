@@ -86,6 +86,7 @@ using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Repositories.Service;
 using BankSystemProject.Repositories.Service.AdminServices;
+using Mailjet.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -101,11 +102,7 @@ namespace BankSystemProject
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            //builder.Services.AddScoped<IAccount,AccountService>();
             
-
-
 
             // Register DbContext with SQL Server
             builder.Services.AddDbContext<Bank_DbContext>(options =>
@@ -153,7 +150,12 @@ namespace BankSystemProject
             });
 
             builder.Services.AddEndpointsApiExplorer();
-
+            builder.Services.AddScoped<MailjetClient>(provider =>
+             new MailjetClient(
+             builder.Configuration["mailjet:Apikeyin"],
+             builder.Configuration["mailjet:Secretkey"]
+    ));
+            builder.Services.AddHttpContextAccessor();
             // Register custom services
             builder.Services.AddScoped<IAccount, AccountService>();
             builder.Services.AddScoped<JWTService>();
@@ -166,6 +168,8 @@ namespace BankSystemProject
             builder.Services.AddScoped<ILoanApplication, LoanApplicationService>();
             builder.Services.AddScoped<IRepaymentLoan, RepaymentLoanService>();
             builder.Services.AddScoped<ITransfer, TransferService>();
+           builder.Services.AddScoped<IEmail, EmailService>();
+            builder.Services.AddScoped<IImage, ImageService>();
 
             var app = builder.Build();
 

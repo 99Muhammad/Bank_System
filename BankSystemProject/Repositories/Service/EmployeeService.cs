@@ -40,7 +40,7 @@ namespace BankSystemProject.Repositories.Service
                 Position = employeeInfo.User.Role.ToString(),
                 Salary = employeeInfo.EmployeeSalary,
                 HireDate = employeeInfo.HireDate,
-                //PersonalImage=employeeInfo.PersonalImage,
+                PersonalImage=employeeInfo.User.PersonalImage,
                 BranchName = employeeInfo.BranchEmployee.BranchName,
                 BranchLocation = employeeInfo.BranchEmployee.BranchLocation,
 
@@ -66,7 +66,7 @@ namespace BankSystemProject.Repositories.Service
             updateEmployee.User.PhoneNumber = updateDto.PhoneNumber ;
             updateEmployee.User.Address = updateDto.Address ;
             updateEmployee.User.PasswordHash=updateDto.Password;
-            //user.PersonalImage = updateDto.ImageUrl;
+            updateEmployee.User.PersonalImage = updateDto.ImageUrl;
             updateEmployee.User.UserName=updateDto.UserName;
             
             // Save changes
@@ -126,7 +126,7 @@ namespace BankSystemProject.Repositories.Service
             updateEmployee.EmployeeSalary = updateDto.Salary;
             updateEmployee.BranchID = (int)updateDto.BrnachName;
             updateEmployee.IsDeleted = updateDto.IsDeleted;
-
+  
             // Save changes
             _context.Employee.Update(updateEmployee);
             //_context.Users.UpdateLoanApplication(user);
