@@ -32,6 +32,7 @@ namespace BankSystemProject.Repositories.Service
                  Gender = ca.User.Gender,
                  AccountTypeName = ca.AccountType.AccountTypeName,
                  // Balance = ca.Balance,
+                 PersonalImage=ca.User.PersonalImage,
                  CreatedDate = ca.CreatedDate,
 
              }).Where(c => IncludeDelete ? c.IsDeleted : !c.IsDeleted)
@@ -146,9 +147,9 @@ namespace BankSystemProject.Repositories.Service
                 Gender = customerAccounts.User.Gender,
                 AccountTypeName = customerAccounts.AccountType.AccountTypeName,
                 CreatedDate = customerAccounts.CreatedDate,
-                AccountNumber=Base64Helper.Decode( customerAccounts.AccountNumber),
-                Balance=customerAccounts.Balance,
-                //Image=customerAccounts.Image
+                AccountNumber = Base64Helper.Decode(customerAccounts.AccountNumber),
+                Balance = customerAccounts.Balance,
+                PersonalImage = customerAccounts.User.PersonalImage
             };
 
 
@@ -170,18 +171,7 @@ namespace BankSystemProject.Repositories.Service
             customerAccount.User.PhoneNumber = request.PhoneNumber;
             customerAccount.User.Email = request.Email;
             customerAccount.User.UserName = request.UserName;
-
-            // Check if an image is uploaded
-            //if (request.ImageUrl != null)
-            //{
-            //    // Save the image and update the ImageUrl field
-            //    var filePath = Path.Combine("wwwroot/images", request.ImageUrl.FileName);
-            //    using (var stream = new FileStream(filePath, FileMode.SubmitLoanApplicationAsync))
-            //    {
-            //        await request.ImageUrl.CopyToAsync(stream);
-            //    }
-            //    customerAccount.ImageUrl = $"/images/{request.ImageUrl.FileName}";
-            //}
+            customerAccount.User.PersonalImage = request.ImageUrl;
 
             // UpdateLoanApplication the customer account
             if (customerAccount != null)

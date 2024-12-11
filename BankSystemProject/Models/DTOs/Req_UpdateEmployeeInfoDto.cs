@@ -24,11 +24,11 @@ namespace BankSystemProject.Models.DTOs
         [StringLength(100, MinimumLength = 8, ErrorMessage = "Password should be at least 8 characters long.")]
         public string Password { get; set; }
 
-     
-        [ValidationImageAttribute(".png,.jpg ,.jpeg")]
-        [DataType(DataType.Upload)]
-        public IFormFile? ImageUrl { get; set; }
 
+        [ValidationImage(".png,.jpg ,.jpeg")]
+        [DataType(DataType.Upload)]
+        // public IFormFile? ImageUrl { get; set; }
+        public string ImageUrl { get; set; }
         [Required(ErrorMessage = "Username is required.")]
         [StringLength(20, MinimumLength = 5, ErrorMessage = "Username should be between 5 and 20 characters.")]
         public string UserName { get; set; }

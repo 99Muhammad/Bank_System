@@ -7,7 +7,7 @@
         public string Phone { get; set; }
         public string Address { get; set; }
         public string UserRole { get; set; }
-        //public string PersonalImage { get; set; }
+        public string PersonalImage { get; set; }
         public bool IsDeleted { get; set; }
         public string Gender { get; set; }
         public string AccountTypeName { get; set; }
