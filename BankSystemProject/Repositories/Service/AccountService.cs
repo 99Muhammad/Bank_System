@@ -31,10 +31,8 @@ namespace BankSystemProject.Repositories.Service
         private readonly Bank_DbContext _context;
         private readonly UserManager<Users> _userManager;
         private readonly SignInManager<Users> _signInManager;
-        private readonly ILogger<AccountController> _logger;
         private readonly JWTService _jwtService;
         private readonly IEmail _Email;
-        private readonly IWebHostEnvironment _env;
         private readonly IConfiguration configuration;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly IUrlHelper _urlHelper;
@@ -42,18 +40,16 @@ namespace BankSystemProject.Repositories.Service
 
 
         public AccountService(Bank_DbContext _context, UserManager<Users> _userManager
-            , SignInManager<Users> _signInManager, ILogger<AccountController> logger
-            , JWTService _jwtService, IEmail _Email, IWebHostEnvironment _env
+            , SignInManager<Users> _signInManager
+            , JWTService _jwtService, IEmail _Email
             , IConfiguration _configuration, IUrlHelperFactory _urlHelperFactory
             , IHttpContextAccessor httpContextAccessor)
         {
             this._context = _context;
             this._userManager = _userManager;
             this._signInManager = _signInManager;
-            _logger = logger;
             this._jwtService = _jwtService;
             this._Email = _Email;
-            this._env = _env;
             configuration = _configuration;
             this._urlHelperFactory = _urlHelperFactory;
             _appUrl = _configuration["App:Url"];
@@ -64,23 +60,6 @@ namespace BankSystemProject.Repositories.Service
         new Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor()));
 
         }
-        //public async Task<string> LoginAsync(Req_Login loginDto)
-        //{
-        //    var user = await _userManager.FindByNameAsync(loginDto.UserName); 
-        //    if (user == null)
-        //    {
-        //        return null; 
-        //    }
-        //    if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
-        //    {
-        //        return null; 
-        //    }
-
-        //    var jwtToken = _jwtService.GenerateJwtToken(user); 
-
-        //    return jwtToken;
-        //}
-
         public async Task<Res_TokenDto> LoginAsync(Req_Login loginDto)
         {
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
@@ -89,11 +68,26 @@ namespace BankSystemProject.Repositories.Service
                 return null;
             }
 
-            // Generate Access and Refresh Tokens
+            var isEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            if (!isEmailConfirmed)
+            {
+                
+                throw new InvalidOperationException("Your email is not confirmed yet. Please confirm your email to proceed.");
+            }
+
+                var trackingEntry = new TrackingLoggedInUser
+                {
+                    LoginTime = DateTime.UtcNow,
+                    UserID = user.Id, 
+                   
+                };
+                _context.TrackingLoggedInUsers.Add(trackingEntry);
+                await _context.SaveChangesAsync();
+
+
             var accessToken = _jwtService.GenerateJwtToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
 
-            // Save the Refresh Token to the database
             await SaveRefreshTokenAsync(user.Id, refreshToken);
 
             return new Res_TokenDto
@@ -102,340 +96,74 @@ namespace BankSystemProject.Repositories.Service
                 RefreshToken = refreshToken
             };
         }
-
-
-        //public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
-        //{
-        //    // Validate the user details
-        //    var validationResult = await ValidateUserAsync(registerDto);
-        //    if (!validationResult.Success)
-        //        return validationResult;
-
-        //    // Create the user
-        //    var userInfo = CreateUserInfo(registerDto);
-        //    var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
-        //    if (!result.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
-        //    }
-
-        //    // Assign role
-        //    var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
-        //    if (!roleResult.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
-        //    }
-
-        //    // Handle role-specific logic
-        //    Res_Registration accountCreationResult = new Res_Registration();
-        //    if (registerDto.UserRole == enUserRole.Customer)
-        //    {
-        //        accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
-        //        if (!accountCreationResult.Success)
-        //            return accountCreationResult;
-        //    }
-        //    else
-        //    {
-        //        await HandleEmployeeAsync(userInfo.Id, registerDto);
-        //    }
-
-        //    // Generate Refresh Token for the new user
-        //    var refreshToken = _jwtService.GenerateRefreshToken();
-        //    await SaveRefreshTokenAsync(userInfo.Id, refreshToken);
-
-        //    return new Res_Registration
-        //    {
-        //        UserName = registerDto.UserName,
-        //        AccountNmber = registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
-        //        Success = true
-        //    };
-        //}
-
-
-        //public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
-        //{
-        //    string savedFileName = null;
-
-        //    if (registerDto.ImageUrl != null)
-        //    {
-        //        savedFileName = await SaveImageAsync(registerDto.ImageUrl);
-        //    }
-        //    // Validate the user details
-        //    var validationResult = await ValidateUserAsync(registerDto);
-        //    if (!validationResult.Success)
-        //        return validationResult;
-
-        //    // Create the user
-        //    var userInfo = CreateUserInfo(registerDto,savedFileName);
-        //    var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
-        //    if (!result.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
-        //    }
-
-        //    // Assign role
-        //    var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
-        //    if (!roleResult.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
-        //    }
-
-        //    // Handle role-specific logic
-        //    Res_Registration accountCreationResult = new Res_Registration();
-        //    if (registerDto.UserRole == enUserRole.Customer)
-        //    {
-        //        // Handle customer-specific logic
-        //        accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
-        //        if (!accountCreationResult.Success)
-        //            return accountCreationResult;
-
-        //        // Send email with account number for customers
-        //        try
-        //        {
-        //            await _Email.SendRegistrationEmailAsync(
-        //                registerDto.Email,
-        //                registerDto.UserName,
-        //                accountCreationResult.AccountNmber // Pass the account number
-        //            );
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine($"Failed to send email to customer: {ex.Message}");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        // Handle employee-specific logic
-        //        await HandleEmployeeAsync(userInfo.Id, registerDto);
-
-        //        // Send a generic welcome email for non-customers
-        //        try
-        //        {
-        //            await _Email.SendRegistrationEmailAsync(
-        //                registerDto.Email,
-        //                registerDto.UserName 
-        //            );
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine($"Failed to send welcome email: {ex.Message}");
-        //        }
-        //    }
-
-        //    // Generate Refresh Token for the new user
-        //    var refreshToken = _jwtService.GenerateRefreshToken();
-        //    await SaveRefreshTokenAsync(userInfo.Id, refreshToken);
-
-        //    return new Res_Registration
-        //    {
-        //        UserName = registerDto.UserName,
-        //        //AccountNmber = registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
-        //        Success = true
-        //    };
-        //}
-
-
-        //public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
-        //{
-        //    string savedFileName = null;
-
-        //    if (registerDto.ImageUrl != null)
-        //    {
-        //        savedFileName = await SaveImageAsync(registerDto.ImageUrl);
-        //    }
-
-        //    // Validate the user details
-        //    var validationResult = await ValidateUserAsync(registerDto);
-        //    if (!validationResult.Success)
-        //        return validationResult;
-
-        //    // Create the user
-        //    var userInfo = CreateUserInfo(registerDto, savedFileName);
-        //    var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
-        //    if (!result.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
-        //    }
-
-        //    // Assign role
-        //    var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
-        //    if (!roleResult.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
-        //    }
-        //    Res_Registration accountCreationResult = new Res_Registration();
-        //    if (registerDto.UserRole == enUserRole.Customer)
-        //    {
-        //        accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
-        //        if (!accountCreationResult.Success)
-        //            return accountCreationResult;
-        //    }
-        //    // Generate Email Confirmation Token
-        //    var token = await _userManager.GenerateEmailConfirmationTokenAsync(userInfo);
-        //    var confirmationLink = $"{configuration["FrontendUrl"]}/confirm-email?email={userInfo.Email}&token={Uri.EscapeDataString(token)}";
-
-        //    // Send email with confirmation link
-        //    try
-        //    {
-        //        await _Email.SendRegistrationEmailAsync(
-        //            registerDto.Email,
-        //            registerDto.UserName,
-        //            registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
-        //            confirmationLink
-        //        );
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Failed to send confirmation email: {ex.Message}");
-        //    }
-
-        //    return new Res_Registration
-        //    {
-        //        UserName = registerDto.UserName,
-        //        Success = true
-        //    };
-        //}
-
-        /*public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
-        {
-            string savedFileName = null;
-
-            // Save image if provided
-            if (registerDto.ImageUrl != null)
-            {
-                savedFileName = await SaveImageAsync(registerDto.ImageUrl);
-            }
-
-            // Validate the user details
-            var validationResult = await ValidateUserAsync(registerDto);
-            if (!validationResult.Success)
-                return validationResult;
-
-            // Create the user
-            var userInfo = CreateUserInfo(registerDto, savedFileName);
-            var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
-            if (!result.Succeeded)
-            {
-                return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
-            }
-
-            // Assign role
-            var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
-            if (!roleResult.Succeeded)
-            {
-                return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
-            }
-
-            // Handle role-specific logic
-            Res_Registration accountCreationResult = new Res_Registration();
-            if (registerDto.UserRole == enUserRole.Customer)
-            {
-                accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
-                if (!accountCreationResult.Success)
-                    return accountCreationResult;
-            }
-
-           
-          
-
-
-          
-            // Generate JWT Access Token
-            var accessToken = _jwtService.GenerateJwtToken(userInfo);
-
-            // Return successful registration response with token
-            return new Res_Registration
-            {
-                UserName = registerDto.UserName,
-                Success = true,
-                AccessToken = accessToken,// Include access token in response
-               // confirmLink = confirmationLink,
-            };
-        }*/
-
-
         public async Task<Res_Registration> RegisterUser(Req_Registration registerDto)
         {
+            string bankName = "NovaBank";
             string savedFileName = null;
 
-            // Save image if provided
+            
             if (registerDto.ImageUrl != null)
             {
                 savedFileName = await SaveImageAsync(registerDto.ImageUrl);
             }
 
-            // Validate the user details
-            // var validationResult = await ValidateUser (registerDto);
-            // if (!validationResult.Success)
-            //     return validationResult;
-
-            // Create the user
             var userInfo = CreateUserInfo(registerDto, savedFileName);
             var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
+           
             if (!result.Succeeded)
             {
                 return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
             }
 
-            // Assign role
             var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
             if (!roleResult.Succeeded)
             {
                 return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
             }
 
-            // Generate confirmation token
             var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(userInfo);
-            //var confirmationLink = $"{configuration["AppUrl"]}/api/confirm-email?userId={userInfo.Id}&token={Uri.EscapeDataString(confirmationToken)}";
+            
             var confirmationUrl = _urlHelper.Action(
-            action: "ConfirmEmail",
-            controller: "Account",
-            values: new { userId = userInfo.Id, token = confirmationToken },
-            protocol: "https"
-        );
+                action: "confirmemail",
+                controller: "Account",
+                values: new { userId = userInfo.Id, token = confirmationToken },
+                protocol: "https"
+                
+            );
 
-            // Create HTML content for the email
-            string emailHtmlContent = $@"
-        <html>
-        <body>
-            <p>Please confirm your account by clicking this link:</p>
-            <p><a href='{confirmationUrl}'>Confirm your account</a></p>
-        </body>
-        </html>";
+            string emailHtmlContent = EmailContentForEmployees(bankName,registerDto.UserName, confirmationUrl);
 
-            // Send confirmation email
-            await _Email.SendEmailAsync(registerDto.Email, "Confirm your email", emailHtmlContent, emailHtmlContent);
-
-            // Handle role-specific logic
-            Res_Registration accountCreationResult = new Res_Registration();
             if (registerDto.UserRole == enUserRole.Customer)
-    {
-                accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
+            {
+               
+                var accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
                 if (!accountCreationResult.Success)
                     return accountCreationResult;
+
+                string accountNumber = accountCreationResult.AccountNmber;
+
+                emailHtmlContent = EmailContentForCustomers(bankName, registerDto.UserName, confirmationUrl, accountNumber);
             }
 
-            // Generate JWT Access Token
+            // Send confirmation email
+            await _Email.SendEmailAsync(registerDto.Email, $"{bankName} - Confirm Your Email", "NovaBank", emailHtmlContent);
+
             var accessToken = _jwtService.GenerateJwtToken(userInfo);
 
-            // Return successful registration response with token
             return new Res_Registration
             {
                 UserName = registerDto.UserName,
                 Success = true,
-                AccessToken = accessToken,
-                confirmLink=confirmationToken           // Include access token in response
-                                           // confirmLink = confirmationLink, // Optional: you can include the confirmation link in the response
+                //AccessToken = accessToken,
             };
         }
-
         private async Task SaveRefreshTokenAsync(string userId, string refreshToken)
         {
             var existingToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userId);
             if (existingToken != null)
             {
                 existingToken.Token = refreshToken;
-                existingToken.ExpiryDate = DateTime.UtcNow.AddDays(7); // Set expiry for 7 days
+                existingToken.ExpiryDate = DateTime.UtcNow.AddDays(7);
             }
             else
             {
@@ -443,25 +171,25 @@ namespace BankSystemProject.Repositories.Service
                 {
                     UserId = userId,
                     Token = refreshToken,
-                    ExpiryDate = DateTime.UtcNow.AddDays(7) // Set expiry for 7 days
+                    ExpiryDate = DateTime.UtcNow.AddDays(7)
                 };
                 _context.RefreshTokens.Add(newToken);
             }
             await _context.SaveChangesAsync();
         }
-
         public async Task<Res_TokenDto> RefreshTokensAsync(string refreshToken)
         {
             var storedToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+           
             if (storedToken == null || storedToken.ExpiryDate <= DateTime.UtcNow)
             {
-                return null; // Invalid or expired token
+                return null; 
             }
 
             var user = await _userManager.FindByIdAsync(storedToken.UserId);
             if (user == null)
             {
-                return null; // User not found
+                return null;
             }
 
             // Generate new tokens
@@ -481,7 +209,6 @@ namespace BankSystemProject.Repositories.Service
 
             };
         }
-
         private async Task<Res_Registration> ValidateUserAsync(Req_Registration registerDto)
         {
             var existingUserByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
@@ -512,8 +239,6 @@ namespace BankSystemProject.Repositories.Service
                 DateOfBirth = registerDto.DateOfBirth,
                 PersonalImage = savedFile,
                 LockoutEnd = DateTime.Now,
-
-                
             };
         }
         private async Task<Res_Registration> HandleCustomerAccountAsync(string userId, Req_Registration registerDto)
@@ -562,48 +287,7 @@ namespace BankSystemProject.Repositories.Service
             _context.Employee.Add(newEmployee);
             await _context.SaveChangesAsync();
         }
-        //public async Task<Res_Registration> RegisterUserAsync(Req_Registration registerDto)
-        //{
-        //    // Validate the user details
-        //    var validationResult = await ValidateUserAsync(registerDto);
-        //    if (!validationResult.Success)
-        //        return validationResult;
-
-        //    // SubmitLoanApplicationAsync the user
-        //    var userInfo = CreateUserInfo(registerDto);
-
-        //    var result = await _userManager.CreateAsync(userInfo, registerDto.Password);
-        //    if (!result.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", result.Errors.Select(e => e.Description)) };
-        //    }
-
-        //    // Assign role
-        //    var roleResult = await _userManager.AddToRoleAsync(userInfo, registerDto.UserRole.ToString());
-        //    if (!roleResult.Succeeded)
-        //    {
-        //        return new Res_Registration { Message = string.Join(", ", roleResult.Errors.Select(e => e.Description)) };
-        //    }
-        //    var accountCreationResult=new Res_Registration() ;
-        //    // Handle role-specific logic
-        //    if (registerDto.UserRole == enUserRole.Customer)
-        //    {
-        //         accountCreationResult = await HandleCustomerAccountAsync(userInfo.Id, registerDto);
-        //        if (!accountCreationResult.Success)
-        //            return accountCreationResult;
-        //    }
-        //    else
-        //    {
-        //        await HandleEmployeeAsync(userInfo.Id, registerDto);
-        //    }
-
-        //    return new Res_Registration
-        //    {
-        //        UserName = registerDto.UserName,
-        //        AccountNmber = registerDto.UserRole == enUserRole.Customer ? accountCreationResult.AccountNmber : null,
-        //        Success = true
-        //    };
-        //}
+       
         private async Task<string> GenerateUniqueAccountNumAsync()
         {
             Random random = new Random();
@@ -635,16 +319,15 @@ namespace BankSystemProject.Repositories.Service
             if (!Directory.Exists(uploadFolder))
                 Directory.CreateDirectory(uploadFolder);
 
-            // Generate unique file name
+           
             string fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
             string filePath = Path.Combine(uploadFolder, fileName);
 
-            // Save the file
+          
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await imageFile.CopyToAsync(stream);
             }
-
             return fileName;
         }
 
@@ -661,21 +344,6 @@ namespace BankSystemProject.Repositories.Service
 
             return result.Succeeded;
         }
-
-        //public async Task<bool> ResetPasswordAsync(ResetPasswordReqDTO resetPasswordDto)
-        //{
-        //    var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
-        //    if (user == null)
-        //    {
-        //        return false;
-        //    }
-
-        //    //var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetPasswordDto.Token));
-
-        //    var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.NewPassword);
-        //    return result.Succeeded;
-        //}
-
         public async Task Logout(ClaimsPrincipal userPrincipal)
         {
             var user = await _userManager.GetUserAsync(userPrincipal);
@@ -707,6 +375,93 @@ namespace BankSystemProject.Repositories.Service
             await _Email.SendEmailAsync(user.Email, subject, emailBody,emailBody);
 
             return true;
+        }
+        private string EmailContentForEmployees(string bankName,string UserName,string confirmationUrl)
+        {
+         string content=   $@"
+<html>
+<head>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 10px;
+        }}
+        .email-header {{
+            text-align: center;
+            margin-bottom: 20px;
+        }}
+        .email-header h1 {{
+            color: #0073e6;
+        }}
+        .email-footer {{
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #555;
+        }}
+        .btn {{
+            display: inline-block;
+            background-color: #0073e6;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }}
+        .btn:hover {{
+            background-color: #005bb5;
+        }}
+    </style>
+</head>
+<body>
+    <div class='email-container'>
+        <div class='email-header'>
+            <h1>Welcome to {bankName}</h1>
+        </div>
+        <p>Dear {UserName},</p>
+        <p>Thank you for choosing <strong>{bankName}</strong>. We are thrilled to have you onboard!</p>
+        <p>Please confirm your account by clicking the button below:</p>
+        <a class='btn' href='{confirmationUrl}'>Confirm Your Account</a>
+    </div>
+</body>
+</html>";
+
+            return content;
+        }
+
+        private string EmailContentForCustomers(string bankName,string UserName,string confirmationUrl,string accountNumber)
+        {
+           string content= $@"
+<html>
+<head>
+    <style>
+        /* Same styles as above */
+    </style>
+</head>
+<body>
+    <div class='email-container'>
+        <div class='email-header'>
+            <h1>Welcome to {bankName}</h1>
+        </div>
+        <p>Dear {UserName},</p>
+        <p>Thank you for choosing <strong>{bankName}</strong>. We are thrilled to have you onboard!</p>
+        <p>Your account number is: <strong>{accountNumber}</strong></p>
+        <p>Please confirm your account by clicking the button below:</p>
+        <a class='btn' href='{confirmationUrl}'>Confirm Your Account</a>
+    </div>
+</body>
+</html>";
+            return content;
         }
     }
 }

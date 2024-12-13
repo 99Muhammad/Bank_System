@@ -8,19 +8,18 @@ namespace BankSystemProject.Config
     {
         public void Configure(EntityTypeBuilder<TrackingLoggedInUser> builder)
         {
-            builder.HasKey(tlu => tlu.LoggedInUserId);
+            builder.HasKey(tlu => tlu.LoggedInId);
 
-            builder.HasOne(tlu => tlu.customerAccount)
-                   .WithMany(u => u.trackingLoggedInUsers)
-                   .HasForeignKey(tlu => tlu.CustomerAccountID);
+            builder.HasOne(tlu => tlu.users)
+                   .WithMany(u => u.TrackingLoggedInUsers)
+                   .HasForeignKey(tlu => tlu.UserID)
+                   .OnDelete(DeleteBehavior.Restrict);
 
-            //builder.Property(tlu => tlu.LoginTime)
-            //       .IsRequired();
+            //builder.HasOne(tlu => tlu.EmployeeAccount)
+            //      .WithMany(u => u.trackingLoggedInUsers)
+            //      .HasForeignKey(tlu => tlu.CustomerAccountID)
+            //      .OnDelete(DeleteBehavior.Restrict);
 
-            //builder.Property(tlu => tlu.LogoutTime);
-
-            //builder.Property(tlu => tlu.IsActive)
-            //       .IsRequired();
         }
     }
 

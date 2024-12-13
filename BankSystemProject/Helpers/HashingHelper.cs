@@ -11,7 +11,7 @@ namespace BankSystemProject.Helpers
             {
                 var bytes = Encoding.UTF8.GetBytes(input);
                 var hashBytes = sha256.ComputeHash(bytes);
-                return Convert.ToBase64String(hashBytes); // Convert hash to Base64 for storage
+                return Convert.ToBase64String(hashBytes); 
             }
         }
     }

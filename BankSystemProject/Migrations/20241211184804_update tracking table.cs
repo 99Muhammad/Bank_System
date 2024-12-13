@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BankSystemProject.Migrations
 {
     /// <inheritdoc />
-    public partial class Updatetransaction : Migration
+    public partial class updatetrackingtable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -101,6 +101,22 @@ namespace BankSystemProject.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_LoanTypes", x => x.LoanTypeId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -240,6 +256,26 @@ namespace BankSystemProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TrackingLoggedInUsers",
+                columns: table => new
+                {
+                    LoggedInId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LoginTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrackingLoggedInUsers", x => x.LoggedInId);
+                    table.ForeignKey(
+                        name: "FK_TrackingLoggedInUsers_AspNetUsers_UserID",
+                        column: x => x.UserID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ATMMachines",
                 columns: table => new
                 {
@@ -354,27 +390,6 @@ namespace BankSystemProject.Migrations
                         column: x => x.LoanTypeId,
                         principalTable: "LoanTypes",
                         principalColumn: "LoanTypeId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TrackingLoggedInUsers",
-                columns: table => new
-                {
-                    LoggedInUserId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoginTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LogoutTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CustomerAccountID = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TrackingLoggedInUsers", x => x.LoggedInUserId);
-                    table.ForeignKey(
-                        name: "FK_TrackingLoggedInUsers_CustomersAccounts_CustomerAccountID",
-                        column: x => x.CustomerAccountID,
-                        principalTable: "CustomersAccounts",
-                        principalColumn: "CustomerAccountId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -611,9 +626,9 @@ namespace BankSystemProject.Migrations
                 column: "LoanTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TrackingLoggedInUsers_CustomerAccountID",
+                name: "IX_TrackingLoggedInUsers_UserID",
                 table: "TrackingLoggedInUsers",
-                column: "CustomerAccountID");
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_CustomerAccountId",
@@ -655,6 +670,9 @@ namespace BankSystemProject.Migrations
 
             migrationBuilder.DropTable(
                 name: "LoanRepayments");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "TrackingLoggedInUsers");
