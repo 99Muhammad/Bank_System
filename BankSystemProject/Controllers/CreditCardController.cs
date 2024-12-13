@@ -21,11 +21,13 @@ namespace BankSystemProject.Controllers
             }
 
         [HttpPost("/CreateCreditCard")]
-        //[Authorize(Roles ="Employee")]
+        //[Authorize(Roles ="CreditCardOfficer")]
+        //[Authorize(Roles = "SystemAdministrator")]
         public async Task<IActionResult> CreateCreditCard([FromForm] Req_CreditCardDto creditCard)
             {
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get UserId from the JWT token
+            
+            // Get UserId from the JWT token
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
 
             if (creditCard == null)
                 {  
@@ -48,7 +50,7 @@ namespace BankSystemProject.Controllers
             }
 
         //[Authorize(Roles ="Customer")]
-        [HttpPut("/UpdateCreditCard/{creditCardId}")]
+        [HttpPut("/CustomerUpdateCreditCard/{creditCardId}")]
         public async Task<IActionResult> UpdateCreditCard(int creditCardId, [FromForm] Req_UserUpdateCreditCardDto updateCardDto)
         {
             if (updateCardDto == null)
@@ -66,8 +68,9 @@ namespace BankSystemProject.Controllers
             return Ok(new { message = "Credit card updated successfully." });
         }
 
-        //[Authorize(Roles ="Employee")]
-        [HttpPut("/UpdateCreditCardByAdmin/{creditCardId}")]
+        //[Authorize(Roles ="CreditCardOfficer")]
+        //[Authorize(Roles = "SystemAdministrator")]
+        [HttpPut("/UserUpdateCreditCard/{creditCardId}")]
         public async Task<IActionResult> UpdateCreditCardByAdminAsync(int creditCardId, [FromForm] Req_AdminUpdateCreditCard updateCardDto)
         {
             if (updateCardDto == null)
@@ -85,7 +88,8 @@ namespace BankSystemProject.Controllers
             return Ok(new { message = "Credit card updated successfully." });
         }
 
-        //[Authorize(Roles ="Employee")]
+        //[Authorize(Roles ="CreditCardOfficer")]
+        //[Authorize(Roles = "SystemAdministrator")]
         [HttpGet("GetAllCardsInfo")]
         public async Task<IActionResult> GetAllCardsInfo()
         {
@@ -99,7 +103,8 @@ namespace BankSystemProject.Controllers
             return Ok(cards);
         }
 
-        //[Authorize(Roles ="Employee")]
+        //[Authorize(Roles ="CreditCardOfficer")]
+        //[Authorize(Roles = "SystemAdministrator")]
         [HttpGet("GetAllDeletedCardsInfo")]
         public async Task<IActionResult> GetAllDeletedCardsInfo()
         {
@@ -114,6 +119,8 @@ namespace BankSystemProject.Controllers
         }
 
         //[Authorize(Roles ="Customer")]
+        //[Authorize(Roles ="CreditCardOfficer")]
+        //[Authorize(Roles = "SystemAdministrator")]
         [HttpGet("GetCreditCardById/{creditCardID}")]
         public async Task<IActionResult> GetCreditCardById(int creditCardID)
         {
@@ -127,7 +134,8 @@ namespace BankSystemProject.Controllers
             return Ok(creditCard);
         }
 
-        //[Authorize(Roles ="Employee")]
+        //[Authorize(Roles ="CreditCardOfficer")]
+        //[Authorize(Roles = "SystemAdministrator")]
         [HttpDelete("DeleteCreditCard/{creditCardID}")]
         public async Task<IActionResult> DeleteCreditCard(int creditCardID)
         {

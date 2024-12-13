@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankSystemProject.Migrations
 {
     [DbContext(typeof(Bank_DbContext))]
-    [Migration("20241206192738_Update transaction ")]
-    partial class Updatetransaction
+    [Migration("20241211184804_update tracking table")]
+    partial class updatetrackingtable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -453,24 +453,22 @@ namespace BankSystemProject.Migrations
 
             modelBuilder.Entity("BankSystemProject.Model.TrackingLoggedInUser", b =>
                 {
-                    b.Property<int>("LoggedInUserId")
+                    b.Property<int>("LoggedInId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoggedInUserId"));
-
-                    b.Property<int>("CustomerAccountID")
-                        .HasColumnType("int");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoggedInId"));
 
                     b.Property<DateTime>("LoginTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("LogoutTime")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("UserID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("LoggedInUserId");
+                    b.HasKey("LoggedInId");
 
-                    b.HasIndex("CustomerAccountID");
+                    b.HasIndex("UserID");
 
                     b.ToTable("TrackingLoggedInUsers");
                 });
@@ -637,6 +635,33 @@ namespace BankSystemProject.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("BankSystemProject.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -891,13 +916,13 @@ namespace BankSystemProject.Migrations
 
             modelBuilder.Entity("BankSystemProject.Model.TrackingLoggedInUser", b =>
                 {
-                    b.HasOne("BankSystemProject.Model.CustomerAccount", "customerAccount")
-                        .WithMany("trackingLoggedInUsers")
-                        .HasForeignKey("CustomerAccountID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("BankSystemProject.Model.Users", "users")
+                        .WithMany("TrackingLoggedInUsers")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("customerAccount");
+                    b.Navigation("users");
                 });
 
             modelBuilder.Entity("BankSystemProject.Model.TransactionsDepWi", b =>
@@ -993,8 +1018,6 @@ namespace BankSystemProject.Migrations
 
                     b.Navigation("Loans");
 
-                    b.Navigation("trackingLoggedInUsers");
-
                     b.Navigation("transactions");
 
                     b.Navigation("transferInfos");
@@ -1021,6 +1044,8 @@ namespace BankSystemProject.Migrations
             modelBuilder.Entity("BankSystemProject.Model.Users", b =>
                 {
                     b.Navigation("CustomerAccounts");
+
+                    b.Navigation("TrackingLoggedInUsers");
 
                     b.Navigation("employees");
                 });

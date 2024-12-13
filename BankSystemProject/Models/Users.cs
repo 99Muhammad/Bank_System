@@ -18,7 +18,7 @@ namespace BankSystemProject.Model
        // public ICollection<Branch> ManagedBranches { get; set; }
         
         //public ICollection<TransferInfo> TransferInfos { get; set; }
-       // public ICollection<TrackingLoggedInUser> TrackingLoggedInUsers { get; set; }
+       public ICollection<TrackingLoggedInUser> TrackingLoggedInUsers { get; set; }
         public ICollection<Employee> employees { get; set; }
     }
 
