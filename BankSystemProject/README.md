@@ -2,7 +2,6 @@
 
 Welcome to the **Novo Bank System** project, a comprehensive solution for managing core banking operations
 
-
 ---
 
 ## 🏦 **Overview**
