@@ -135,6 +135,13 @@ namespace BankSystemProject
                 };
             });
 
+           // builder.Services.AddControllers()
+           //.AddJsonOptions(options =>
+           //{
+           //    //options.JsonSerializerOptions.IgnoreNullValues = true; // Optionally ignore null values
+           //    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // Handles circular references
+           //});
+
             // Add JSON options
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>

@@ -1,4 +1,6 @@
-﻿namespace BankSystemProject.Model
+﻿
+
+namespace BankSystemProject.Model
 {
     public class TrackingLoggedInUser
     {
@@ -17,6 +19,7 @@
         //public string UserType { get; set; }
 
         public string UserID { get; set; }//FK
+
         public Users users { get; set; }
        // public int? CustomerAccountID { get; set; } // Foreign Key to Customers (nullable for Employees)
         //public CustomerAccount CustomerAccount { get; set; } // Navigation property for Customers
