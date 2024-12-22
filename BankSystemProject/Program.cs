@@ -175,10 +175,10 @@ namespace BankSystemProject
             builder.Services.AddScoped<ILoanApplication, LoanApplicationService>();
             builder.Services.AddScoped<IRepaymentLoan, RepaymentLoanService>();
             builder.Services.AddScoped<ITransfer, TransferService>();
-           builder.Services.AddScoped<IEmail, EmailService>();
+            builder.Services.AddScoped<IEmail, EmailService>();
             builder.Services.AddScoped<IImage, ImageService>();
             builder.Services.AddScoped<ITrackingLoggedInUsers,TrackingLoggedInUsersService>();
-          
+            builder.Services.AddScoped<IBranch, BranchService>();
 
             var app = builder.Build();
 
