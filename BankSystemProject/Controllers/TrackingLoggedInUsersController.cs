@@ -20,7 +20,7 @@ namespace BankSystemProject.Controllers
         [HttpGet("GetAllLoggedInUsersAsync")]
         public async Task<IActionResult> GetAllLoggedInUsersAsync()
         {
-            var users = _trackingUsers.GetAllLoggedInUsersAsync();
+            var users = await _trackingUsers.GetAllLoggedInUsersAsync();
             return Ok(users);
         }
     }
