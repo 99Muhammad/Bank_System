@@ -41,7 +41,7 @@ namespace BankSystemProject.Controllers
 
       
         [HttpPost]
-        public async Task<IActionResult> CreateBranch([FromBody] Res_Branch branch)
+        public async Task<IActionResult> CreateBranch([FromBody] Res_BranchDto branch)
         {
             if (branch == null)
             {
@@ -54,7 +54,7 @@ namespace BankSystemProject.Controllers
 
         
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBranch(int id, [FromBody] Res_Branch branch)
+        public async Task<IActionResult> UpdateBranch(int id, [FromBody] Res_BranchDto branch)
         {
             if (branch == null )
             {

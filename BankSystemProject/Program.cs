@@ -179,6 +179,8 @@ namespace BankSystemProject
             builder.Services.AddScoped<IImage, ImageService>();
             builder.Services.AddScoped<ITrackingLoggedInUsers,TrackingLoggedInUsersService>();
             builder.Services.AddScoped<IBranch, BranchService>();
+            builder.Services.AddScoped<ILoanType, LoanTypeService>();
+            builder.Services.AddScoped<IAccountType,AccountTypeService>();
 
             var app = builder.Build();
 
