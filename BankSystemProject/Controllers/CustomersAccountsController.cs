@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankSystemProject.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class CustomersAccountsController : ControllerBase
     {
@@ -20,9 +20,9 @@ namespace BankSystemProject.Controllers
             this._IcustomerAccount = _IcustomerAccount;
         }
 
-        //[Authorize(Roles ="Employee")]
-        [HttpGet("GetAllCustomersAccounts")]
-        public async Task<IActionResult> GetCustomerAccounts()
+        [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllCustomerAccounts()
         {
             var accounts = await _IcustomerAccount.GetCustomersAccountsInfoAsync(false);
             if (!accounts.Any())
@@ -32,7 +32,7 @@ namespace BankSystemProject.Controllers
             return Ok(accounts);
         }
 
-        //[Authorize(Roles ="Employee")]
+        [Authorize(Roles = "SystemAdministrator,BranchManager")]
         [HttpGet("GetAllDeletedCustomersAccounts")]
         public async Task<IActionResult> GetAllDeletedCustomersAccounts()
         {
@@ -44,8 +44,8 @@ namespace BankSystemProject.Controllers
             return Ok(accounts);
         }
 
-
-        [HttpPut("UpdateAccountInfo/{customerAccountID}")]
+        [Authorize("Customer")]
+        [HttpPut("Customer/{customerAccountID}")]
         public async Task<IActionResult> UpdateAccountInfo([FromForm] Req_UpdateAccTypeInCustomerAcc req_UpdateAccTypeIn,int customerAccountID)
         {
             try
@@ -62,8 +62,9 @@ namespace BankSystemProject.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-        [HttpGet("GetAccountTypeNameByCustomerAccountID/{customerAccountID}")]
+        
+        [Authorize(Roles = "SystemAdministrator,BranchManager,Customer")]
+        [HttpGet("{customerAccountID}")]
         public async Task<IActionResult> GetAccountTypeNameByCustomerAccountID( int customerAccountID)
         {
             try
@@ -81,9 +82,9 @@ namespace BankSystemProject.Controllers
             }
         }
 
-        [HttpGet("GetAccountInfoByAccountNumber")]
-        //[Authorize]
-        public async Task<IActionResult> GetAccountInfo(string accountNumber)
+        [Authorize(Roles = "SystemAdministrator,BranchManager,Customer")]
+        [HttpGet]
+        public async Task<IActionResult> GetAccountInfoByAccountNumber(string accountNumber)
         {
             if (string.IsNullOrWhiteSpace(accountNumber))
             {
@@ -134,7 +135,8 @@ namespace BankSystemProject.Controllers
             }
         }
 
-        [HttpPut("UpdateCustomerInfo/{customerAccountID}")]
+        [Authorize(Roles = "SystemAdministrator,BranchManager,Customer")]
+        [HttpPut("Customer/{customerAccountID}")]
         public async Task<IActionResult> UpdateCustomerInfo([FromForm] Req_UpdateCustomerInfoDto request, int customerAccountID)
         {
             try
@@ -157,8 +159,9 @@ namespace BankSystemProject.Controllers
             }
         }
 
-        [HttpDelete("DeleteCustomerAccount/{customerAccountID}")]
-        public async Task<IActionResult> DeleteCustomerAccount(int customerAccountID)
+        [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpDelete("{customerAccountID}")]
+        public async Task<IActionResult> DeleteCustomerAccountById(int customerAccountID)
         {
             try
             {

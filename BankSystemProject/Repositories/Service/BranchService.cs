@@ -49,6 +49,12 @@ namespace BankSystemProject.Repositories.Service
 
         public async Task<Res_BranchDto> CreateBranchAsync(Res_BranchDto branch)
         {
+            var existBranch = await _dbContext.Branches
+                .FirstOrDefaultAsync(b=>b.BranchName==branch.BranchName);
+           
+            if (existBranch != null)
+                return null!;
+           
             var newBranch = new Branch
             {
                 BranchName = branch.BranchName,

@@ -1,4 +1,4 @@
-﻿using BankSystemProject.Controllers.AdminControllers;
+﻿using BankSystemProject.Controllers;
 using BankSystemProject.Data;
 using BankSystemProject.Helpers;
 using BankSystemProject.Model;
@@ -144,9 +144,20 @@ namespace BankSystemProject.Repositories.Service
 
                 emailHtmlContent = EmailContentForCustomers(bankName, registerDto.UserName, confirmationUrl, accountNumber);
             }
+            else
+            {
+                var employeeCreationResult = await HandleEmployeeAsync(userInfo.Id, registerDto);
+                
+                if (!employeeCreationResult.Success)
+                    return employeeCreationResult;
+
+               
+
+                emailHtmlContent = EmailContentForEmployees(bankName, registerDto.UserName, confirmationUrl);
+            }
 
             // Send confirmation email
-            await _Email.SendEmailAsync(registerDto.Email, $"{bankName} - Confirm Your Email", "NovaBank", emailHtmlContent);
+            await _Email.SendEmailAsync(registerDto.Email,"NovaBank",$"{bankName} - Confirm Your Email", emailHtmlContent);
 
             var accessToken = _jwtService.GenerateJwtToken(userInfo);
 
@@ -275,8 +286,19 @@ namespace BankSystemProject.Repositories.Service
                 AccountNmber = accountNumber
             };
         }
-        private async Task HandleEmployeeAsync(string userId, Req_Registration registerDto)
+        private async Task<Res_Registration> HandleEmployeeAsync(string userId, Req_Registration registerDto)
         {
+            var existingEmployee = await _context.Employee
+               .FirstOrDefaultAsync(ca => ca.UserId == userId);
+
+            if(existingEmployee!=null)
+            {
+                return new Res_Registration
+                {
+                    Message = "An Employee already exists.",
+                    Success = false
+                };
+            }
             var newEmployee = new Employee
             {
                 UserId = userId,
@@ -286,6 +308,11 @@ namespace BankSystemProject.Repositories.Service
             };
             _context.Employee.Add(newEmployee);
             await _context.SaveChangesAsync();
+           
+            return new Res_Registration
+            {
+                Success = true,
+            };
         }
        
         private async Task<string> GenerateUniqueAccountNumAsync()

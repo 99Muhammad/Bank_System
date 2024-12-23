@@ -2,6 +2,7 @@
 using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace BankSystemProject.Repositories.Service
@@ -15,6 +16,7 @@ namespace BankSystemProject.Repositories.Service
             _dbContext = dbContext;
         }
 
+        
         public async Task<List<Res_AccountTypeDto>> GetAllAccountTypesAsync()
         {
             return await _dbContext.AccountTypes
@@ -26,6 +28,8 @@ namespace BankSystemProject.Repositories.Service
                 })
                 .ToListAsync();
         }
+
+        
 
         public async Task<Res_AccountTypeDto> GetAccountTypeByIdAsync(int accountTypeId)
         {

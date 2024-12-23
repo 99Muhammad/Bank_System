@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankSystemProject.Migrations
 {
     [DbContext(typeof(Bank_DbContext))]
-    [Migration("20241211184804_update tracking table")]
-    partial class updatetrackingtable
+    [Migration("20241223012013_Database")]
+    partial class Database
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

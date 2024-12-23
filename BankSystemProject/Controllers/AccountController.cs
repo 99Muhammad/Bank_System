@@ -14,7 +14,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
-namespace BankSystemProject.Controllers.AdminControllers
+namespace BankSystemProject.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -25,7 +25,7 @@ namespace BankSystemProject.Controllers.AdminControllers
         private readonly UserManager<Users> _userManager;
         private readonly IEmail _Email;
         private readonly IUrlHelper _urlHelper;
-        private readonly  string ?_appUrl;
+        private readonly string? _appUrl;
         private readonly IConfiguration _configuration;
 
         public AccountController(
@@ -34,16 +34,16 @@ namespace BankSystemProject.Controllers.AdminControllers
             UserManager<Users> _userManager,
             IEmail _Email,
             IUrlHelperFactory urlHelperFactory,
-            IHttpContextAccessor httpContextAccessor,IConfiguration _configuration)
+            IHttpContextAccessor httpContextAccessor, IConfiguration _configuration)
         {
             this._IAccount = _IAccount;
             this._jwtService = _jwtService;
             this._userManager = _userManager;
             this._Email = _Email;
             this._configuration = _configuration;
-            _appUrl= _appUrl = _configuration["App:Url"];
+            _appUrl = _appUrl = _configuration["App:Url"];
 
-            
+
             if (httpContextAccessor.HttpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContextAccessor.HttpContext));
@@ -56,9 +56,9 @@ namespace BankSystemProject.Controllers.AdminControllers
         }
 
 
-        //[Authorize]
+
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync([FromForm]Req_Login loginDto)
+        public async Task<IActionResult> LoginAsync([FromForm] Req_Login loginDto)
         {
 
             var loginResult = await _IAccount.LoginAsync(loginDto);
@@ -68,10 +68,10 @@ namespace BankSystemProject.Controllers.AdminControllers
                 return Unauthorized("Invalid UserName or Password");
             }
 
-            return Ok(new { Token = loginResult});
+            return Ok(new { Token = loginResult });
         }
 
-        //[Authorize(Roles ="SystemAdministrator")]
+        [Authorize(Roles = "SystemAdministrator")]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] Req_Registration registerDto)
         {
@@ -83,18 +83,19 @@ namespace BankSystemProject.Controllers.AdminControllers
             if (result.UserName == null)
                 return BadRequest(result.Message);
 
-            
+
             return Ok(new
             {
                 message = "Registration successful! , please check your email to Confirm Email ",
                 result.UserName,
                 result.Success,
-              //result.AccessToken,
-              //result.confirmLink,
-                
+                //result.AccessToken,
+                //result.confirmLink,
+
             });
         }
-        
+
+        [Authorize(Roles = "SystemAdministrator")]
         [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
@@ -106,7 +107,7 @@ namespace BankSystemProject.Controllers.AdminControllers
             return Ok(tokens);
         }
 
-        //[Authorize]
+        [Authorize(Roles = "SystemAdministrator")]
         [HttpGet("confirmemail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
@@ -119,8 +120,8 @@ namespace BankSystemProject.Controllers.AdminControllers
 
             return Ok("Email confirmed successfully.");
         }
-        
-        //[Authorize]
+
+        [Authorize]
         [HttpPost("reset-password-request")]
         public async Task<IActionResult> RequestPasswordReset([FromBody] ResetPasswordRequestDto request)
         {
@@ -130,27 +131,27 @@ namespace BankSystemProject.Controllers.AdminControllers
                 return BadRequest(new { Message = "User not found" });
             }
 
-            
+
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-           
+
             var resetLink = $"{_appUrl}/api/Account/ResetPassword?email={user.Email}&token={resetToken}";
             // HTML email body with a clickable link
             var emailBody = $@"
              <html>
                  <body>
                      <p>Please reset your password by clicking the following link:</p>
-                     <p><a href='{ resetLink}'>Reset Password</a></p>
+                     <p><a href='{resetLink}'>Reset Password</a></p>
                  </ body >
              </ html > ";
 
             // Send the reset link to the user's email as HTML
-            await _Email.SendEmailAsync(user.Email, "Password Reset", emailBody,emailBody);
+            await _Email.SendEmailAsync(user.Email, "Password Reset", emailBody, emailBody);
 
             return Ok(new { Message = "Password reset link has been sent to your email." });
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromQuery] ResetPasswordDto resetPasswordDto)
         {
@@ -175,7 +176,7 @@ namespace BankSystemProject.Controllers.AdminControllers
             return Ok(new { Message = "Password has been successfully reset." });
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {
@@ -184,7 +185,7 @@ namespace BankSystemProject.Controllers.AdminControllers
             return Ok(new { message = "Successfully logged out" });
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordReqDTO forgotPasswordDto)
         {
