@@ -3,9 +3,9 @@ using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Repositories.Service.AdminServices;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BankSystemProject.Controllers.AdminControllers
+namespace BankSystemProject.Controllers
 {
-    public class UserController:ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IUser _IUser;
 
@@ -41,7 +41,7 @@ namespace BankSystemProject.Controllers.AdminControllers
         public async Task<IActionResult> SearchUserByFullNameOrUserNameAsync(string name)
         {
             var user = await _IUser.SearchUserByFullNameOrUserNameAsync(name);
-            if (user==null)
+            if (user == null)
             {
                 return NotFound($"No users found with the name: {name}");
             }
@@ -70,9 +70,9 @@ namespace BankSystemProject.Controllers.AdminControllers
             {
                 return NotFound($"User with ID: {userID} not found");
             }
-       
+
             return Ok("Deleted done successfully");
-            
+
         }
 
         [HttpPut("UpdateUserAsync/{id}")]

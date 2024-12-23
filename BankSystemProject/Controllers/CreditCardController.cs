@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace BankSystemProject.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class CreditCardController : ControllerBase
     {
@@ -20,9 +20,8 @@ namespace BankSystemProject.Controllers
                 this._ICreditCard = _ICreditCard;
             }
 
-        [HttpPost("/CreateCreditCard")]
-        //[Authorize(Roles ="CreditCardOfficer")]
-        //[Authorize(Roles = "SystemAdministrator")]
+        [HttpPost]
+        [Authorize(Roles = "SystemAdministrator,CreditCardOfficer,Teller")]
         public async Task<IActionResult> CreateCreditCard([FromForm] Req_CreditCardDto creditCard)
             {
             
@@ -49,9 +48,9 @@ namespace BankSystemProject.Controllers
                 return StatusCode(500, "Internal server error while creating credit card.");
             }
 
-        //[Authorize(Roles ="Customer")]
-        [HttpPut("/CustomerUpdateCreditCard/{creditCardId}")]
-        public async Task<IActionResult> UpdateCreditCard(int creditCardId, [FromForm] Req_UserUpdateCreditCardDto updateCardDto)
+        [Authorize(Roles ="Customer")]
+        [HttpPut("Customer/{creditCardId}")]
+        public async Task<IActionResult> UpdateCreditCardById(int creditCardId, [FromForm] Req_UserUpdateCreditCardDto updateCardDto)
         {
             if (updateCardDto == null)
             {
@@ -68,10 +67,11 @@ namespace BankSystemProject.Controllers
             return Ok(new { message = "Credit card updated successfully." });
         }
 
-        //[Authorize(Roles ="CreditCardOfficer")]
-        //[Authorize(Roles = "SystemAdministrator")]
-        [HttpPut("/UserUpdateCreditCard/{creditCardId}")]
-        public async Task<IActionResult> UpdateCreditCardByAdminAsync(int creditCardId, [FromForm] Req_AdminUpdateCreditCard updateCardDto)
+        
+        [HttpPut("Admin/{creditCardId}")]
+        [Authorize(Roles = "SystemAdministrator,CreditCardOfficer,Teller")]
+
+        public async Task<IActionResult> UpdateCreditCardById(int creditCardId, [FromForm] Req_AdminUpdateCreditCard updateCardDto)
         {
             if (updateCardDto == null)
             {
@@ -88,9 +88,8 @@ namespace BankSystemProject.Controllers
             return Ok(new { message = "Credit card updated successfully." });
         }
 
-        //[Authorize(Roles ="CreditCardOfficer")]
-        //[Authorize(Roles = "SystemAdministrator")]
-        [HttpGet("GetAllCardsInfo")]
+        [Authorize(Roles = "SystemAdministrator,CreditCardOfficer,Teller")]
+        [HttpGet]
         public async Task<IActionResult> GetAllCardsInfo()
         {
             var cards = await _ICreditCard.GetAllCardsAsync(false);
@@ -103,9 +102,8 @@ namespace BankSystemProject.Controllers
             return Ok(cards);
         }
 
-        //[Authorize(Roles ="CreditCardOfficer")]
-        //[Authorize(Roles = "SystemAdministrator")]
-        [HttpGet("GetAllDeletedCardsInfo")]
+        [Authorize(Roles = "SystemAdministrator,CreditCardOfficer")]
+        [HttpGet]
         public async Task<IActionResult> GetAllDeletedCardsInfo()
         {
             var cards = await _ICreditCard.GetAllCardsAsync(true);
@@ -118,10 +116,8 @@ namespace BankSystemProject.Controllers
             return Ok(cards);
         }
 
-        //[Authorize(Roles ="Customer")]
-        //[Authorize(Roles ="CreditCardOfficer")]
-        //[Authorize(Roles = "SystemAdministrator")]
-        [HttpGet("GetCreditCardById/{creditCardID}")]
+       [Authorize(Roles = "SystemAdministrator,CreditCardOfficer,Teller,Customer")]
+        [HttpGet("{creditCardID}")]
         public async Task<IActionResult> GetCreditCardById(int creditCardID)
         {
             var creditCard = await _ICreditCard.GetCreditCardByIdAsync(creditCardID);
@@ -134,9 +130,9 @@ namespace BankSystemProject.Controllers
             return Ok(creditCard);
         }
 
-        //[Authorize(Roles ="CreditCardOfficer")]
-        //[Authorize(Roles = "SystemAdministrator")]
-        [HttpDelete("DeleteCreditCard/{creditCardID}")]
+
+        [Authorize(Roles = "SystemAdministrator,CreditCardOfficer")]
+        [HttpDelete("{creditCardID}")]
         public async Task<IActionResult> DeleteCreditCard(int creditCardID)
         {
             var result = await _ICreditCard.DeleteCreditCardAsync(creditCardID);

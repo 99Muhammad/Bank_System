@@ -15,10 +15,10 @@ namespace BankSystemProject.Repositories.Service
             _dbContext = dbContext;
         }
 
-        public async Task<List<Res_Branch>> GetAllBranchesAsync()
+        public async Task<List<Res_BranchDto>> GetAllBranchesAsync()
         {
             var branches =await _dbContext.Branches
-                .Select(b => new Res_Branch
+                .Select(b => new Res_BranchDto
                 {
                     BranchName = b.BranchName,
                     BranchLocation = b.BranchLocation,
@@ -28,7 +28,7 @@ namespace BankSystemProject.Repositories.Service
             
         }
 
-        public async Task<Res_Branch> GetBranchByIdAsync(int branchId)
+        public async Task<Res_BranchDto> GetBranchByIdAsync(int branchId)
         {
 
             var branch =await _dbContext.Branches
@@ -37,7 +37,7 @@ namespace BankSystemProject.Repositories.Service
             if (branch == null)
                 return null!;
 
-            var resBranch = new Res_Branch
+            var resBranch = new Res_BranchDto
             {
                 BranchName = branch.BranchName,
                 BranchLocation = branch.BranchLocation,
@@ -47,8 +47,14 @@ namespace BankSystemProject.Repositories.Service
             return resBranch;
         }
 
-        public async Task<Res_Branch> CreateBranchAsync(Res_Branch branch)
+        public async Task<Res_BranchDto> CreateBranchAsync(Res_BranchDto branch)
         {
+            var existBranch = await _dbContext.Branches
+                .FirstOrDefaultAsync(b=>b.BranchName==branch.BranchName);
+           
+            if (existBranch != null)
+                return null!;
+           
             var newBranch = new Branch
             {
                 BranchName = branch.BranchName,
@@ -59,7 +65,7 @@ namespace BankSystemProject.Repositories.Service
             return branch; 
         }
 
-        public async Task<Res_Branch> UpdateBranchAsync(int branchId, Res_Branch branch)
+        public async Task<Res_BranchDto> UpdateBranchAsync(int branchId, Res_BranchDto branch)
         {
             var existingBranch = await _dbContext.Branches
                 .FirstOrDefaultAsync(b => b.BranchId == branchId);
@@ -73,7 +79,7 @@ namespace BankSystemProject.Repositories.Service
             existingBranch.BranchName = branch.BranchName;
             existingBranch.BranchLocation = branch.BranchLocation;
            
-            var res = new Res_Branch
+            var res = new Res_BranchDto
             {
                 BranchName = existingBranch.BranchName,
                 BranchLocation = existingBranch.BranchLocation,
