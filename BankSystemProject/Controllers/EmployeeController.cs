@@ -1,12 +1,13 @@
 ﻿using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankSystemProject.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
@@ -16,8 +17,8 @@ namespace BankSystemProject.Controllers
             this._IEmployee= _IEmployee;
         }
 
-        //for specific Employee Role
-        [HttpGet("GetDeletedEmployeeInfoByUsername/{username}")]
+        [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpGet("{username}")]
         public async Task<IActionResult> GetDeletedEmployeeInfoByUsername(string username)
         {
             var employeeInfo = await _IEmployee.GetEmployeeInfoByUsernameAsync(username,true);
@@ -29,7 +30,9 @@ namespace BankSystemProject.Controllers
 
             return Ok(employeeInfo);
         }
-        [HttpGet("GetEmployeeInfo/{username}")]
+
+        [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpGet("{username}")]
         public async Task<IActionResult> GetEmployeeInfoByUsername(string username)
         {
             var employeeInfo = await _IEmployee.GetEmployeeInfoByUsernameAsync(username, false);
@@ -42,9 +45,10 @@ namespace BankSystemProject.Controllers
             return Ok(employeeInfo);
         }
 
-        //for specific Employee Role
-        [HttpPut("UpdateEmployeeByUserNameInfo/{UserName}")]
-        public async Task<IActionResult> UpdateEmployeeByUserNameInfo(string UserName, [FromForm] Req_UpdateEmployeeInfoDto updateDto)
+        [Authorize(Roles = "SystemAdministrator,BranchManager,teller,CreditCardOfficer," +
+            "LoanOfficer")]
+        [HttpPut("employee/{UserName}")]
+        public async Task<IActionResult> UpdateEmployeeInfoByUserName(string UserName, [FromForm] Req_UpdateEmployeeInfoDto updateDto)
         {
             var isUpdated = await _IEmployee.UpdateEmployeeInfoByUserNameAsync(UserName, updateDto);
 
@@ -56,11 +60,11 @@ namespace BankSystemProject.Controllers
             return Ok(new { Message = "Employee information updated successfully." });
         }
 
-        //for Employee Admin
-        [HttpGet("GetAllEmployees")]
-        public async Task<IActionResult> GetAllEmployeesAsync()
+       [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllDeletedEmployeesAsync()
         {
-            var employees = await _IEmployee.GetAllEmployeesAsync();
+            var employees = await _IEmployee.GetAllEmployeesAsync(true);
 
             if (employees == null || !employees.Any())
                 return NotFound("No employees found.");
@@ -68,8 +72,20 @@ namespace BankSystemProject.Controllers
             return Ok(employees);
         }
 
-        //for Employee Admin
-        [HttpPut("UpdateEmployeeByIDInfo/{EmployeeID}")]
+         [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllEmployeesAsync()
+        {
+            var employees = await _IEmployee.GetAllEmployeesAsync(false);
+
+            if (employees == null || !employees.Any())
+                return NotFound("No employees found.");
+
+            return Ok(employees);
+        }
+
+        [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpPut("Admin/{EmployeeID}")]
         public async Task<IActionResult> UpdateEmployeeByIDInfo(int EmployeeID, [FromForm] Req_UpdateEmployeeInfoByAdminDto updateDto)
         {
             var isUpdated = await _IEmployee.UpdateEmployeeInfoByIDAsync(EmployeeID, updateDto);
@@ -82,11 +98,11 @@ namespace BankSystemProject.Controllers
             return Ok(new { Message = "Employee information updated successfully." });
         }
 
-        //for Employee Admin
-        [HttpDelete("DeleteEmployee/{UserID}")]
-        public async Task<IActionResult> SoftDeleteEmployeeAsync(string UserID)
+        [Authorize(Roles = "SystemAdministrator,BranchManager")]
+        [HttpDelete("{UserID}")]
+        public async Task<IActionResult> DeleteEmployeeAsync(string UserID)
         {
-            var result = await _IEmployee.SoftDeleteEmployeeAsync(UserID);
+            var result = await _IEmployee.DeletedEmployeeAsync(UserID);
 
             if (!result)
             {

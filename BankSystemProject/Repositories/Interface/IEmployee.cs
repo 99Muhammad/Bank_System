@@ -7,8 +7,8 @@ namespace BankSystemProject.Repositories.Interface
     {
         Task<Res_EmployeeInfoDto> GetEmployeeInfoByUsernameAsync(string username, bool includeDeleted);
         Task<bool> UpdateEmployeeInfoByUserNameAsync(string username, Req_UpdateEmployeeInfoDto updateDto);
-        Task<List<Employee>> GetAllEmployeesAsync();
+        Task<List<Res_EmployeeInfoDto>> GetAllEmployeesAsync(bool includeDeleted);
         Task<bool> UpdateEmployeeInfoByIDAsync(int EmployeeID, Req_UpdateEmployeeInfoByAdminDto updateDto);
-        Task<bool> SoftDeleteEmployeeAsync(string UserID);
+        Task<bool> DeletedEmployeeAsync(string UserID);
     }
 }

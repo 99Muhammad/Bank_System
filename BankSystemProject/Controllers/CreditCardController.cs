@@ -21,7 +21,7 @@ namespace BankSystemProject.Controllers
             }
 
         [HttpPost]
-        [Authorize(Roles = "SystemAdministrator,CreditCardOfficer,Teller")]
+      //  [Authorize(Roles = "SystemAdministrator,CreditCardOfficer,Teller")]
         public async Task<IActionResult> CreateCreditCard([FromForm] Req_CreditCardDto creditCard)
             {
             

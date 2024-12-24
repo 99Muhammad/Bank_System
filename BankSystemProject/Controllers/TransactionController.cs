@@ -1,12 +1,14 @@
 ﻿using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Service;
+using BankSystemProject.Shared.Enums;
+using Mailjet.Client.Resources.SMS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankSystemProject.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class TransactionController : ControllerBase
     {
@@ -16,26 +18,41 @@ namespace BankSystemProject.Controllers
             this.transaction = transaction;
         }
        
-        [HttpPost("deposit")]
-        public async Task<IActionResult> Deposit([FromForm] Req_ImplementTransactionDto transactionDto)
+        [HttpPost]
+        public async Task<IActionResult> ImplementTransaction([FromForm] Req_ImplementTransactionDto transactionDto)
         {
             var result = await transaction.ImplementTransaction(transactionDto);
-            if (result)
-                return Ok(new { Message = "Deposit successful" });
-            return BadRequest(new { Message = "Failed to deposit" });
+            string transactionType=transactionDto.transactionType.ToString();
+            
+            if (result!=-1)
+            {
+                var transactionRecord = new Res_ImplementTransactionDto
+                {
+
+                    Message = $"{transactionType} successful! Your new balance is $"+
+                    result,
+                    Amount = transactionDto.transactionAmount,
+                    //Fee = transactioninfo.customerAccount,
+                    Description = $"The amount of {transactionDto.transactionAmount} has been credited to your account."
+                };
+
+                return Ok(transactionRecord);
+            }
+               
+            return BadRequest(new { Message = $"Failed to {transactionType}" });
         }
 
         
-        [HttpPost("withdraw")]
-        public async Task<IActionResult> Withdraw([FromForm] Req_ImplementTransactionDto transactionDto)
-        {
-            var result = await transaction.ImplementTransaction(transactionDto);
-            if (result)
-                return Ok(new { Message = "Withdrawal successful" });
-            return BadRequest(new { Message = "Failed to withdraw" });
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> Withdraw([FromForm] Req_ImplementTransactionDto transactionDto)
+        //{
+        //    var result = await transaction.ImplementTransaction(transactionDto);
+        //    if (result)
+        //        return Ok(new { Message = "Withdrawal successful" });
+        //    return BadRequest(new { Message = "Failed to withdraw" });
+        //}
 
-        [HttpGet("GetAllTransactions")]
+        [HttpGet]
         public async Task<IActionResult> GetAllTransactions()
         {
             var transactions = await transaction.GetAllTransactionsAsync();
@@ -46,7 +63,7 @@ namespace BankSystemProject.Controllers
             return Ok(transactions);
         }
 
-        [HttpGet("GetTransactionsByAccount/{accountNumber}")]
+        [HttpGet("{accountNumber}")]
         public async Task<IActionResult> GetTransactionsByAccountNumber(string accountNumber)
         {
             if (string.IsNullOrWhiteSpace(accountNumber))

@@ -21,7 +21,7 @@ namespace BankSystemProject.Config
               new AccountType { AccountTypeId = 1, AccountTypeName = "Savings Account", Description = "A basic account for saving money with interest, typically with limited withdrawals." },
               new AccountType { AccountTypeId = 2, AccountTypeName = "Checking Account", Description = "An account for frequent transactions, often used for daily spending." },
               new AccountType { AccountTypeId = 3, AccountTypeName = "Fixed Deposit", Description = "A long-term deposit account with a fixed term and higher interest rate." },
-              //new enAccountType { AccountTypeId = 4, AccountTypeName = "Recurring Deposit", Description = "A deposit account for recurring monthly deposits over a fixed term." },
+              //new enAccountType { AccountTypeId = 4, AccountTypeName = "Recurring ImplementTransaction", Description = "A deposit account for recurring monthly deposits over a fixed term." },
               new AccountType { AccountTypeId = 4, AccountTypeName = "Business Account", Description = "A checking or savings account tailored for businesses and organizations." },
               // new enAccountType { AccountTypeId = 6, AccountTypeName = "Student Account", Description = "A low-maintenance account for students with minimal fees and limited features." },
               // new enAccountType { AccountTypeId = 7, AccountTypeName = "Joint Account", Description = "An account shared between multiple account holders, often for family purposes." },

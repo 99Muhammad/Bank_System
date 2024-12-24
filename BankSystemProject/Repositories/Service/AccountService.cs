@@ -5,7 +5,6 @@ using BankSystemProject.Model;
 using BankSystemProject.Models;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
-using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Shared.Enums;
 using Mailjet.Client.Resources;
 using Microsoft.AspNetCore.Http;

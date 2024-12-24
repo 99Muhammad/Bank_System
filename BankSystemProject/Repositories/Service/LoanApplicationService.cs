@@ -4,17 +4,22 @@ using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Shared.Enums;
+using Mailjet.Client.TransactionalEmails;
+using Mailjet.Client;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace BankSystemProject.Repositories.Service
 {
-    public class LoanApplicationService:ILoanApplication
+    public class LoanApplicationService : ILoanApplication
     {
         private readonly Bank_DbContext _context;
+        private readonly IEmail _emailService;
 
-        public LoanApplicationService(Bank_DbContext context)
+        public LoanApplicationService(Bank_DbContext context, IEmail emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         public async Task<List<Res_GetLoanApplicationDto>> GetAllApplicationsAsync()
@@ -32,8 +37,8 @@ namespace BankSystemProject.Repositories.Service
             LoanAmount = la.LoanAmount,
             LoanTermMonths = la.LoanTermMonths,
             LoanTypeName = la.LoanType.LoanTypeName,
-            ApplicationStatus= la.ApplicationStatus,
-            ApplicationDate=la.ApplicationDate,
+            ApplicationStatus = la.ApplicationStatus,
+            ApplicationDate = la.ApplicationDate,
             //CustomerAccountName = la.CustomersAccounts.User.FullName,
         })
         .ToListAsync();
@@ -43,31 +48,33 @@ namespace BankSystemProject.Repositories.Service
 
         public async Task<Res_GetLoanApplicationDto> GetApplicationByIdAsync(int ApplicationID)
         {
-            var loanApplication =await _context.LoanApplications
-                  .Include(la => la.CustomersAccounts)
-                  .Include(la => la.LoanType)
-                  .FirstOrDefaultAsync(e => e.LoanApplicationId == ApplicationID);
+            var loanApplication = await _context.LoanApplications
+       .Include(la => la.CustomersAccounts)
+       .ThenInclude(ca => ca.User) // Ensure User is included
+       .Include(la => la.LoanType)
+       .FirstOrDefaultAsync(e => e.LoanApplicationId == ApplicationID);
 
             if (loanApplication == null)
             {
                 return null;
             }
+
             var result = new Res_GetLoanApplicationDto
             {
                 LoanApplicationId = loanApplication.LoanApplicationId,
                 ApplicantName = loanApplication.ApplicantName,
                 Address = loanApplication.Address,
                 ContactNumber = loanApplication.ContactNumber,
-                Email = loanApplication.CustomersAccounts.User.Email,
+                Email = loanApplication.CustomersAccounts?.User?.Email, // Use null conditional operator
                 LoanAmount = loanApplication.LoanAmount,
                 LoanTermMonths = loanApplication.LoanTermMonths,
-                LoanTypeName = loanApplication.LoanType.LoanTypeName,
-                // CustomerAccountName = loanApplication.CustomersAccounts.User.FullName,
+                LoanTypeName = loanApplication.LoanType?.LoanTypeName, // Use null conditional operator
+                                                                       // CustomerAccountName = loanApplication.CustomersAccounts?.User?.FullName, 
                 ApplicationStatus = loanApplication.ApplicationStatus,
                 ApplicationDate = loanApplication.ApplicationDate,
             };
 
-            return result;     
+            return result;
         }
 
         public async Task<Res_LoanApplicationDto> SubmitLoanApplicationAsync(Req_LoanApplicationDto loanApplication)
@@ -78,7 +85,7 @@ namespace BankSystemProject.Repositories.Service
                 .FirstOrDefaultAsync(c => c.AccountNumber ==
                 Base64Helper.Encode(loanApplication.BankAccountNumber));
 
-           
+
             var loanType = await _context.LoanTypes.FirstOrDefaultAsync(l => l.LoanTypeId == (int)loanApplication.LoanType);
 
             if (loanType == null)
@@ -97,10 +104,10 @@ namespace BankSystemProject.Repositories.Service
                 };
             }
 
-            var isExist= _context.LoanApplications.Any(c => c.BankAccountNumber
+            var isExist = _context.LoanApplications.Any(c => c.BankAccountNumber
             == Base64Helper.Encode(loanApplication.BankAccountNumber));
-            
-            if(isExist)
+
+            if (isExist)
             {
                 return new Res_LoanApplicationDto
                 {
@@ -126,7 +133,7 @@ namespace BankSystemProject.Repositories.Service
                 IsSecuredLoan = loanApplication.IsSecuredLoan,
                 CollateralDescription = loanApplication.CollateralDescription.ToString(),
                 ApplicationStatus = enLoanAndApplicationStatus.Pending.ToString(),
-                
+
                 InterestRate = loanType.InterestRate
             };
 
@@ -143,7 +150,8 @@ namespace BankSystemProject.Repositories.Service
 
         public async Task<bool> UpdateLoanApplicationAsync(int id, Req_UpdateLoanApplicationDto updateDto)
         {
-            var loanApplication = await _context.LoanApplications.FirstOrDefaultAsync(la => la.LoanApplicationId == id);
+            var loanApplication = await _context.LoanApplications
+                .Include(l=>l.loan).FirstOrDefaultAsync(la => la.LoanApplicationId == id);
 
             if (loanApplication == null)
             {
@@ -161,14 +169,15 @@ namespace BankSystemProject.Repositories.Service
             loanApplication.IsSecuredLoan = updateDto.IsSecuredLoan;
             loanApplication.CollateralDescription = updateDto.CollateralDescription.ToString() ?? loanApplication.CollateralDescription;
             loanApplication.RepaymentSchedule = updateDto.RepaymentSchedule.ToString() ?? loanApplication.RepaymentSchedule;
-           // loanApplication.ApplicationStatus = updateDto.ApplicationStatus.ToString() ?? loanApplication.ApplicationStatus;
-
+            // loanApplication.ApplicationStatus = updateDto.ApplicationStatus.ToString() ?? loanApplication.ApplicationStatus;
+            loanApplication.ApplicationStatus = enLoanAndApplicationStatus.Pending.ToString();
+            loanApplication.loan.Status = enLoanAndApplicationStatus.Pending.ToString();
             _context.LoanApplications.Update(loanApplication);
             await _context.SaveChangesAsync();
 
             return true; // UpdateLoanApplication successful
         }
-          
+
         public async Task<bool> DeleteAsync(int id)
         {
             var loanApplication = await _context.LoanApplications.FindAsync(id);
@@ -181,21 +190,21 @@ namespace BankSystemProject.Repositories.Service
 
         public async Task<List<Res_GetLoanApplicationDto>> GetApplicationsByStatusAsync(string status)
         {
-           
+
             var loanApplications = await _context.LoanApplications
-                .Include(la=>la.CustomersAccounts)
-                .Include(la=>la.LoanType)
+                .Include(la => la.CustomersAccounts)
+                .Include(la => la.LoanType)
                 .Where(la => la.ApplicationStatus == status)
                 .Select(la => new Res_GetLoanApplicationDto
                 {
                     LoanApplicationId = la.LoanApplicationId,
                     ApplicantName = la.CustomersAccounts.User.FullName,
                     Email = la.Email,
-                    Address=la.Address,
-                    ApplicationStatus= la.ApplicationStatus,
+                    Address = la.Address,
+                    ApplicationStatus = la.ApplicationStatus,
                     LoanAmount = la.LoanAmount,
                     LoanTermMonths = la.LoanTermMonths,
-                    LoanTypeName=la.LoanType.LoanTypeName,
+                    LoanTypeName = la.LoanType.LoanTypeName,
                     ApplicationDate = la.ApplicationDate
                 })
                 .ToListAsync();
@@ -203,7 +212,7 @@ namespace BankSystemProject.Repositories.Service
             return loanApplications;
         }
 
-       
+
         public async Task<Res_EmiDto> CalculateStandaloneEmiAsync(Req_StandaloneEmiDto emiRequest)
         {
             double emi = EmiCalculator.CalculateEMI(emiRequest.LoanAmount, emiRequest.AnnualInterestRate, emiRequest.LoanTermMonths);
@@ -218,7 +227,7 @@ namespace BankSystemProject.Repositories.Service
             };
         }
 
-        
+
         public async Task<Res_EmiDto> CalculateEmiForApplicationAsync(int loanApplicationId)
         {
             var loanApplication = await _context.LoanApplications
@@ -241,20 +250,29 @@ namespace BankSystemProject.Repositories.Service
 
         public async Task<bool> ApproveLoanApplicationAsync(int loanApplicationId)
         {
-           
-            // Load the LoanApplication, loan, and CustomerAccount (with explicit includes)
+            
             var loanApplication = await _context.LoanApplications
                 .Include(la => la.LoanType)
-                .Include(l => l.CustomersAccounts)
-                // Ensure CustomerAccount is included
-                .FirstOrDefaultAsync(la => 
-                la.LoanApplicationId == loanApplicationId
-                && la.ApplicationStatus == enLoanAndApplicationStatus.Pending.ToString());
-          
+                .Include(la => la.CustomersAccounts)
+                .FirstOrDefaultAsync(la =>
+                    la.LoanApplicationId == loanApplicationId
+                    && la.ApplicationStatus == enLoanAndApplicationStatus.Pending.ToString());
+
+            if (loanApplication == null)
+                throw new InvalidOperationException("Loan application not found or not in Pending status.");
+
+           
+            var existingLoan = await _context.Loans
+                .FirstOrDefaultAsync(l => l.LoanApplicationId == loanApplicationId);
+
+            if (existingLoan != null && existingLoan.Status == enLoanAndApplicationStatus.Approved.ToString())
+                throw new InvalidOperationException("A loan for this application has already been approved.");
+
+    
             loanApplication.ApplicationStatus = enLoanAndApplicationStatus.Approved.ToString();
             _context.LoanApplications.Update(loanApplication);
 
-            // Create new loan
+          
             var loan = new Loan
             {
                 LoanApplicationId = loanApplicationId,
@@ -264,18 +282,35 @@ namespace BankSystemProject.Repositories.Service
                 Status = loanApplication.ApplicationStatus,
                 LoanTypeId = loanApplication.LoanTypeId,
                 CustomerAccountId = loanApplication.CustomerAccountId,
-                ApprovedDate=DateTime.Now,
+                ApprovedDate = DateTime.Now,
             };
 
-            _context.Loans.Add(loan);
+            _context.Loans.Update(loan);
 
-            // Update CustomerAccount balance
+          
             loanApplication.CustomersAccounts.Balance += loan.LoanAmount;
 
+           
             await _context.SaveChangesAsync();
+
+            //Send approval email to the customer
+                await _emailService.SendEmailAsync(
+                    loanApplication.Email,
+                    loanApplication.ApplicantName,
+                    "Loan Application Approved",
+                    $@"
+                <p>Dear {loanApplication.ApplicantName},</p>
+                <p>Congratulations! Your loan application with ID <strong>{loanApplication.LoanApplicationId}</strong> has been approved.</p>
+                <p>Loan Amount: {loanApplication.LoanAmount:C}</p>
+                <p>Loan Term: {loanApplication.LoanTermMonths} months</p>
+                <p>Thank you for choosing our services.</p>
+                <p>Best regards,</p>
+                <p>NovaBank</p>
+            "
+                );
 
             return true;
         }
-
+       
     }
 }

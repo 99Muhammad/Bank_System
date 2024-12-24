@@ -2,12 +2,13 @@
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Shared.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankSystemProject.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class LoanApplicationController : ControllerBase
     {
@@ -17,15 +18,18 @@ namespace BankSystemProject.Controllers
         {
             _loanApplicationService = loanApplicationService;
         }
-
-        [HttpGet("GetAllApplications")]
+       
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer")]
+        [HttpGet]
         public async Task<IActionResult> GetAllApplications()
         {
             var applications = await _loanApplicationService.GetAllApplicationsAsync();
             return Ok(applications);
         }
 
-        [HttpGet("GetApplicationById/{ApplicationID}")]
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer")]
+
+        [HttpGet("{ApplicationID}")]
         public async Task<IActionResult> GetApplicationById(int ApplicationID)
         {
             var application = await _loanApplicationService
@@ -34,7 +38,8 @@ namespace BankSystemProject.Controllers
             return Ok(application);
         }
 
-        [HttpPost("SubmitLoanApplication")]
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> SubmitLoanApplication([FromForm] Req_LoanApplicationDto loanApplication)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -43,7 +48,9 @@ namespace BankSystemProject.Controllers
             return Ok(createdApplication);
         }
 
-        [HttpPut("UpdateLoanApplication/{loanApplicationID}")]
+        [HttpPut("{loanApplicationID}")]
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer,Customer")]
+
         public async Task<IActionResult> UpdateLoanApplication(int loanApplicationID, [FromForm] Req_UpdateLoanApplicationDto loanApplication)
         {
             if (!ModelState.IsValid)
@@ -61,7 +68,9 @@ namespace BankSystemProject.Controllers
             return Ok(new { message = "Loan application updated successfully." });
         }
 
-        [HttpDelete("DeleteLoanAppliation/{AppliationID}")]
+        [HttpDelete("{AppliationID}")]
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer")]
+
         public async Task<IActionResult> DeleteLoanAppliation(int AppliationID)
         {
             var result = await _loanApplicationService.DeleteAsync(AppliationID);
@@ -69,7 +78,8 @@ namespace BankSystemProject.Controllers
             return Ok("Delete done successfully.");
         }
 
-        [HttpGet("GetApplicationsByStatus")]
+        [HttpGet]
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer")]
         public async Task<IActionResult> GetApplicationsByStatus([FromQuery] enLoanAndApplicationStatus status)
         {
             if (string.IsNullOrWhiteSpace(status.ToString()))
@@ -88,7 +98,9 @@ namespace BankSystemProject.Controllers
         }
 
         
-        [HttpPost("CalculateStandaloneEmi")]
+        [HttpPost]
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer.Customer")]
+
         public async Task<IActionResult> CalculateStandaloneEmi([FromForm] Req_StandaloneEmiDto emiRequest)
         {
             if (emiRequest.LoanAmount <= 0 || emiRequest.AnnualInterestRate <= 0 || emiRequest.LoanTermMonths <= 0)
@@ -100,7 +112,9 @@ namespace BankSystemProject.Controllers
             return Ok(emiResult);
         }
 
-        [HttpGet("CalculateEmiForApplication/{loanApplicationId}")]
+        [HttpGet("{loanApplicationId}")]
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer,Customer")]
+
         public async Task<IActionResult> CalculateEmiForApplication(int loanApplicationId)
         {
             try
@@ -114,7 +128,9 @@ namespace BankSystemProject.Controllers
             }
         }
 
-        [HttpPut("ApproveLoanApplication/{loanApplicationId}")]
+        [HttpPut("/{loanApplicationId}")]
+        [Authorize(Roles = "SystemAdministrator,LoanOfficer")]
+       
         public async Task<IActionResult> ApproveLoanApplication(int loanApplicationId)
         {
             bool approvalResult = await _loanApplicationService.ApproveLoanApplicationAsync(loanApplicationId);

@@ -1,9 +1,8 @@
 ﻿using BankSystemProject.Model;
 using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
-using BankSystemProject.Repositories.Interface.AdminInterfaces;
 using BankSystemProject.Repositories.Service;
-using BankSystemProject.Repositories.Service.AdminServices;
+using BankSystemProject.Repositories.Service;
 using BankSystemProject.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

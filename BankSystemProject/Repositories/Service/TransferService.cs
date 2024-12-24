@@ -17,19 +17,58 @@ namespace BankSystemProject.Repositories.Service
         }
 
         // Retrieve all transfer records
-        public async Task<List<TransferInfo>> GetAllTransfersAsync()
+        public async Task<List<Res_TransferDto>> GetAllTransfersAsync()
         {
-            return await _context.TransferInfo
-                .Include(t => t.customerAccount) 
-                .ToListAsync();
+            var transfers = await _context.TransferInfo
+             .Include(t => t.customerAccount) // Ensure navigation properties are included, if needed
+             .ToListAsync();
+
+            // Manually map the TransferInfo entities to TransferInfoDto
+            var transferDtos = transfers.Select(t => new Res_TransferDto
+            {
+                TransferInfoId = t.TransferInfoId,
+                CustomerAccountID = t.CustomerAccountID,
+                AccountNumTransferFrom = t.AccountNumTransferFrom,
+                AccountNumTransferTo = t.AccountNumTransferTo,
+                BalanceFromBeforeTransfer = t.BalanceFromBeforeTransfer,
+                BalanceToBeforeTransfer = t.BalanceToBeforeTransfer,
+                DateTimeTransfer = t.DateTimeTransfer,
+                BalanceFromAfterTransfer = t.BalanceFromAfterTransfer,
+                BalanceToAfterTransfer = t.BalanceToAfterTransfer
+            }).ToList();
+
+            return transferDtos;
         }
+        
 
         // Retrieve a specific transfer record by ID
-        public async Task<TransferInfo> GetTransferByIdAsync(int id)
+        public async Task<Res_TransferDto> GetTransferByIdAsync(int id)
         {
-            return await _context.TransferInfo
-                .Include(t => t.customerAccount)
-                .FirstOrDefaultAsync(t => t.TransferInfoId == id);
+            //return await _context.TransferInfo
+            //    .Include(t => t.customerAccount)
+            //    .FirstOrDefaultAsync(t => t.TransferInfoId == id);
+
+            var transfers = await _context.TransferInfo
+             .Include(t => t.customerAccount) // Ensure navigation properties are included, if needed
+              .FirstOrDefaultAsync(t => t.TransferInfoId == id);
+
+            if (transfers == null)
+                return null!;
+            // Manually map the TransferInfo entities to TransferInfoDto
+            var transferDtos = new Res_TransferDto
+            {
+                TransferInfoId = transfers.TransferInfoId,
+                CustomerAccountID = transfers.CustomerAccountID,
+                AccountNumTransferFrom = transfers.AccountNumTransferFrom,
+                AccountNumTransferTo = transfers.AccountNumTransferTo,
+                BalanceFromBeforeTransfer = transfers.BalanceFromBeforeTransfer,
+                BalanceToBeforeTransfer = transfers.BalanceToBeforeTransfer,
+                DateTimeTransfer = transfers.DateTimeTransfer,
+                BalanceFromAfterTransfer = transfers.BalanceFromAfterTransfer,
+                BalanceToAfterTransfer = transfers.BalanceToAfterTransfer
+            };
+
+            return transferDtos;
         }
 
         // SubmitLoanApplicationAsync a new transfer record
@@ -43,6 +82,9 @@ namespace BankSystemProject.Repositories.Service
             if (fromAccount == null || toAccount == null)
                 throw new ArgumentException("Invalid account numbers.");
 
+            if(transferInfoDto.AccountNumTransferFrom==transferInfoDto.AccountNumTransferTo)
+                throw new ArgumentException("Invalid account numbers.");
+            
             if (fromAccount.Balance < transferInfoDto.Amount)
                 throw new InvalidOperationException("Insufficient funds in the source account.");
             
@@ -52,7 +94,7 @@ namespace BankSystemProject.Repositories.Service
             fromAccount.Balance -= transferInfoDto.Amount;
             toAccount.Balance += transferInfoDto.Amount;
 
-            // Create a transfer record
+            // CreateLoanRepayment a transfer record
             var transferInfo = new TransferInfo
             {
                 CustomerAccountID=fromAccount.CustomerAccountId,
