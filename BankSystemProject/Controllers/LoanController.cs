@@ -34,7 +34,7 @@ namespace BankSystemProject.Controllers
         }
 
         //[HttpPost]
-        //public async Task<IActionResult> Create(Loan loan)
+        //public async Task<IActionResult> CreateLoanRepayment(Loan loan)
         //{
         //    await _loanService.CreateLoanAsync(loan);
         //    return CreatedAtAction(nameof(GetLoanByoanID), new { id = loan.LoanId }, loan);

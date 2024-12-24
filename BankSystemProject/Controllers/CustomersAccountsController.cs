@@ -1,7 +1,7 @@
 ﻿using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Repositories.Service;
-using BankSystemProject.Repositories.Service.AdminServices;
+using BankSystemProject.Repositories.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

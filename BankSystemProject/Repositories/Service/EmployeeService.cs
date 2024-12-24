@@ -78,14 +78,34 @@ namespace BankSystemProject.Repositories.Service
         }
 
        
-        public async Task<List<Employee>> GetAllEmployeesAsync()
+        public async Task<List<Res_EmployeeInfoDto>> GetAllEmployeesAsync(bool includeDeleted)
         {
-            return await _context.Employee
-                                 .Include(e => e.User)  
-                                 .ToListAsync();
+           
+            var employees = await _context.Employee
+                .Include(e => e.User)
+                .Include(e => e.BranchEmployee)
+                .Where(e => includeDeleted ? e.IsDeleted : !e.IsDeleted)
+                .ToListAsync();
+
+            
+            var employeeDtos = employees.Select(employee => new Res_EmployeeInfoDto
+            {
+                FullName = employee.User.FullName,
+                Email = employee.User.Email,
+                PhoneNumber = employee.User.PhoneNumber,
+                Address = employee.User.Address,
+                Position = employee.User.Role.ToString(),
+                Salary = employee.EmployeeSalary,
+                HireDate = employee.HireDate,
+                PersonalImage = employee.User.PersonalImage,
+                BranchName = employee.BranchEmployee?.BranchName,
+                BranchLocation = employee.BranchEmployee?.BranchLocation,
+            }).ToList();
+
+            return employeeDtos;
         }
 
-        public async Task<bool> SoftDeleteEmployeeAsync(string UserID)
+        public async Task<bool> DeletedEmployeeAsync(string UserID)
         {
             var employee = await _context.Employee
                                          .Include(e => e.User)  
@@ -127,7 +147,7 @@ namespace BankSystemProject.Repositories.Service
             updateEmployee.BranchID = (int)updateDto.BrnachName;
             updateEmployee.IsDeleted = updateDto.IsDeleted;
   
-            // Save changes
+           
             _context.Employee.Update(updateEmployee);
             //_context.Users.UpdateLoanApplication(user);
             await _context.SaveChangesAsync();

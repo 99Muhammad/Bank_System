@@ -5,8 +5,8 @@ namespace BankSystemProject.Repositories.Interface
 {
     public interface ITransfer
     {
-        Task<List<TransferInfo>> GetAllTransfersAsync();
-        Task<TransferInfo> GetTransferByIdAsync(int id);
+        Task<List<Res_TransferDto>> GetAllTransfersAsync();
+        Task<Res_TransferDto> GetTransferByIdAsync(int id);
         Task CreateTransferAsync(Req_TransferInfoDto transferInfoDto);
     }
 }

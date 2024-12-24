@@ -5,6 +5,7 @@ using BankSystemProject.Models.DTOs;
 using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
+using MimeKit.Encodings;
 using System.Transactions;
 
 namespace BankSystemProject.Repositories.Service
@@ -16,10 +17,9 @@ namespace BankSystemProject.Repositories.Service
         {
             this._context = _context;
         }
-        public async Task<bool> ImplementTransaction(Req_ImplementTransactionDto transactionDto)
+        public async Task<double> ImplementTransaction(Req_ImplementTransactionDto transactionDto)
         {
-            //using var transaction = await _context.Database.BeginTransactionAsync();
-
+            
             try
             {
                 //var account = await _context.CustomersAccounts.FindAsync(transactionDto.UserName);
@@ -32,13 +32,14 @@ namespace BankSystemProject.Repositories.Service
 
                 if (transactioninfo == null || (transactionDto.transactionType 
                     == enTransactionType.Withdraw && transactioninfo.Balance < transactionDto.transactionAmount))
-                    return false;
+                    return -1;
 
+                var encodedPinCode = Base64Helper.Encode(transactionDto.PinCode);
 
-               var creditCard= transactioninfo.CreditCards
-                .FirstOrDefault(c => c.PinCode == Base64Helper.Encode(transactionDto.PinCode)); 
-                   
-                if(creditCard== null) return false;
+                var creditCard = transactioninfo.CreditCards
+                .FirstOrDefault(c => c.PinCode== encodedPinCode);
+                
+                if (creditCard== null) return -1;
 
 
                transactioninfo.Balance += (transactionDto.transactionType == enTransactionType.Withdraw ? -transactionDto.transactionAmount : transactionDto.transactionAmount);
@@ -56,41 +57,14 @@ namespace BankSystemProject.Repositories.Service
                 await _context.Transactions.AddAsync(newTransaction);
                 await _context.SaveChangesAsync();
 
-                if (transactionDto.transactionType.ToString() == enTransactionType.Deposit.ToString())
-                {
-                    var transactionRecord = new Res_ImplementTransactionDto
-                    {
-                        Message = "Deposit successful! Your new balance is $" +
-                        transactioninfo.Balance,
-                        Amount = transactionDto.transactionAmount,
-                        //Fee = transactioninfo.customerAccount,
-
-                        Description = $"The amount of {transactionDto.transactionAmount} has been credited to your account."
-                    };
-                }
-                else
-                {
-                    var transactionRecord = new Res_ImplementTransactionDto
-                    {
-                        Message = "Withdrwal successful! Your new balance is $" +
-                                            transactioninfo.Balance,
-                        Amount = transactionDto.transactionAmount,
-
-                        //Fee = transactioninfo.customerAccount.BankFee,
-
-                        Description = $"${transactionDto.transactionAmount} has been debited from your account",
-                    };
-                }
-
-                //await transaction.CommitAsync();
-
-                return true;
+                
+                    return transactioninfo.Balance;
             }
             catch (Exception ex)
             {
                 //await transaction.RollbackAsync();
 
-                return false;
+                return -1;
             }
         }
 
@@ -115,7 +89,7 @@ namespace BankSystemProject.Repositories.Service
         {
             var transactions = await _context.Transactions
                 .Include(t => t.customerAccount)
-                .Where(t => t.customerAccount.AccountNumber == accountNumber)
+                .Where(t => t.customerAccount.AccountNumber == Base64Helper.Encode(accountNumber))
                 .Select(t => new Res_TransactionDetailsDto
                 {
                     TransactionId = t.TransactionId,

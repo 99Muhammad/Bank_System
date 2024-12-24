@@ -1,5 +1,5 @@
 ﻿using BankSystemProject.Models.DTOs;
-using BankSystemProject.Repositories.Interface.AdminInterfaces;
+using BankSystemProject.Repositories.Interface;
 using BankSystemProject.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 

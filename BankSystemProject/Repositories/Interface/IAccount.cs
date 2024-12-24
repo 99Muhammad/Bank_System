@@ -3,7 +3,7 @@ using BankSystemProject.Models;
 using BankSystemProject.Models.DTOs;
 using System.Security.Claims;
 
-namespace BankSystemProject.Repositories.Interface.AdminInterfaces
+namespace BankSystemProject.Repositories.Interface
 {
     public interface IAccount
     {

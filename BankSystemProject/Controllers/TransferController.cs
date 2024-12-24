@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankSystemProject.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class TransferController : ControllerBase
     {
@@ -38,7 +38,7 @@ namespace BankSystemProject.Controllers
         }
 
         [HttpPost("transfer")]
-        public async Task<IActionResult> CreateTransferAsync([FromBody] Req_TransferInfoDto transferInfoDto)
+        public async Task<IActionResult> ImplementTransfer([FromBody] Req_TransferInfoDto transferInfoDto)
         {
             try
             {

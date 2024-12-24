@@ -22,10 +22,10 @@ namespace BankSystemProject.Config
                     .OnDelete(DeleteBehavior.Restrict);
 
             builder
-            .HasOne (l => l.LoanApplication)
+            .HasOne(l => l.LoanApplication)
             .WithOne(la => la.loan)
-            .HasForeignKey<Loan>(l => l.LoanApplicationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey<Loan>(l => l.LoanApplicationId);
+            //.OnDelete(DeleteBehavior.Restrict);
 
             //builder.Property(l => l.LoanAmount)
             //       .HasColumnType("decimal(18,2)");

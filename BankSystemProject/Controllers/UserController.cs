@@ -1,6 +1,7 @@
 ﻿using BankSystemProject.Models.DTOs;
-using BankSystemProject.Repositories.Interface.AdminInterfaces;
-using BankSystemProject.Repositories.Service.AdminServices;
+using BankSystemProject.Repositories.Interface;
+using BankSystemProject.Repositories.Service;
+using BankSystemProject.Shared.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankSystemProject.Controllers
@@ -16,7 +17,7 @@ namespace BankSystemProject.Controllers
 
 
         [HttpGet("FilterUsersByRole/{roleName}")]
-        public async Task<IActionResult> FilterUsersByRoleAsync(string roleName)
+        public async Task<IActionResult> FilterUsersByRoleAsync(enUserRole roleName)
         {
             var users = await _IUser.FilterUsersByRoleAsync(roleName);
             if (users == null || !users.Any())
